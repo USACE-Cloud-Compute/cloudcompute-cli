@@ -1,0 +1,36 @@
+{
+    "manifest_name":     "aggregator-max",
+    "plugin_definition": "CC-AGGREGATOR-PLUGIN",
+    "stores": [
+        {
+            "name":      "FFRD",
+            "store_type": "S3",
+            "profile": "FFRD",
+            "params": {
+                "root": "/model-library/ffrd-store"
+            }
+        }
+    ],
+    "actions": [
+    {
+      "attributes": {
+        "grids": [
+		        "/vsis3/ccstore/model-library/ffrd-store/grids/max_realz_1_block_2_depth.tif",
+            "/vsis3/ccstore/model-library/ffrd-store/grids/max_realz_1_block_3_depth.tif",
+            "/vsis3/ccstore/model-library/ffrd-store/grids/max_realz_1_block_4_depth.tif",
+            "/vsis3/ccstore/model-library/ffrd-store/grids/max_realz_1_block_5_depth.tif"
+	    ],
+        "gridOut": "grids/output/aep_realz_1_block_mean.tif",
+        "loadingConcurrency": 5,
+        "rasterAlgebraFunction":"mean",
+        "noDataComputeSubstitutionValue":0.0,
+        "copyLocal": "true"
+      },
+      "stores": null,
+      "inputs": null,
+      "outputs": null,
+      "type": "raster-algebra2",
+      "description": "raster-algebra"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+    "name": "Raster Algebra Test",
+    "provider":{
+        "type":"docker",
+        "concurrency":1,
+        "queue": "docker-local"
+    },
+    "plugins": ["aggregator-plugin-manifest-local-docker.json"],
+    "event":{
+        "compute-manifests":["raster-algebra-compute-manifest.json"]
+    },
+    "secrets-manager":{
+        "type": "env",
+        "secrets":{
+            "secretsmanager:AWS_ACCESS_KEY_ID::":"AWS_ACCESS_KEY_ID",
+            "secretsmanager:AWS_SECRET_ACCESS_KEY::":"AWS_SECRET_ACCESS_KEY"
+        }
+    }
+
+}

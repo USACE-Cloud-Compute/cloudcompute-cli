@@ -1,0 +1,212 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"time"
+
+	"github.com/google/uuid"
+	. "github.com/usace/cloudcompute"
+	. "github.com/usace/cloudcompute/providers/awsbatch"
+	. "github.com/usace/cloudcompute/providers/docker"
+	"github.com/usace/manifestor/internal/utils"
+)
+
+type CmdCompute struct {
+	//options        CmdOpts
+	provider       ComputeProvider
+	computeConfig  *CmdComputeConfig
+	computeFileDir string
+	computeQueue   string
+	compute        CloudCompute
+}
+
+func (c *CmdCompute) Register() {
+	plugins := make([]*Plugin, len(c.computeConfig.Plugins))
+
+	for i, v := range c.computeConfig.Plugins {
+		pluginpath := fmt.Sprintf("%s/%s", c.computeFileDir, v)
+		plugin, err := utils.ReadJson[Plugin](pluginpath)
+		if err != nil {
+			log.Fatalf("Unable to read the plugin manifest: %s\n", err)
+		}
+		plugins[i] = plugin
+	}
+
+	for _, plugin := range plugins {
+		_, err := c.provider.RegisterPlugin(plugin)
+		if err != nil {
+			log.Fatalf("Failed to register plugin: %s: %s\n", plugin.Name, err)
+		}
+	}
+}
+
+func (c *CmdCompute) Run() {
+	manifestList, ok := c.computeConfig.Event["compute-manifests"]
+	if !ok {
+		log.Fatalf("No manifests")
+	}
+
+	ml := manifestList.([]any)
+
+	manifests := make(CmdLineManifests, len(ml))
+	for i, manifestFile := range ml {
+		manifestPath := fmt.Sprintf("%s/%s", c.computeFileDir, manifestFile)
+		manifest, err := utils.ReadJson[CmdLineManifest](manifestPath)
+		if err != nil {
+			log.Fatalf("Error reading manifest %s: %s\n", manifestFile, err)
+		}
+		manifest.ManifestID = uuid.New()
+		manifest.FileName = manifestFile.(string) //@TODO type inference can result in a panic.  Revisit later after finalizing file formats
+		manifests[i] = *manifest
+	}
+	fmt.Println("done")
+
+	computeManifests := manifests.ToComputeManifests()
+
+	//event generator
+	eventGenerator := NewEventList([]Event{
+		{
+			ID:              uuid.New(),
+			EventIdentifier: "1",
+			Manifests:       computeManifests,
+		},
+	})
+
+	//cc Compute
+	computeID := uuid.New()
+
+	ccCompute := CloudCompute{
+		Name:            "AGGREGATOR_TEST",
+		ID:              computeID,
+		JobQueue:        c.computeQueue,
+		Events:          eventGenerator,
+		ComputeProvider: c.provider,
+	}
+
+	err := ccCompute.Run()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	c.compute = ccCompute
+}
+
+func (c *CmdCompute) WaitForJobs() {
+	jobsRunning := true
+	for jobsRunning {
+		time.Sleep(1 * time.Second)
+		c.compute.Status(JobsSummaryQuery{
+			QueryLevel: "COMPUTE",
+			QueryValue: JobNameParts{
+				Compute: c.compute.ID.String(),
+			},
+			JobSummaryFunction: func(summaries []JobSummary) {
+				count := 0
+				for _, summary := range summaries {
+					if summary.Status == "RUNNING" {
+						count++
+					}
+				}
+				if count == 0 {
+					jobsRunning = false
+					fmt.Println("Shutting Down")
+				}
+			},
+		})
+	}
+}
+
+func awsCompute(compute *CmdComputeConfig) (ComputeProvider, error) {
+	er := compute.Provider["execution-role"].(string)
+	region := compute.Provider["region"].(string)
+	profile := compute.Provider["profile"].(string)
+
+	cpi := NewAwsBatchProviderInput(er, region, profile)
+	return NewAwsBatchProvider(cpi)
+}
+
+func dockerCompute(compute *CmdComputeConfig) (ComputeProvider, error) {
+	concurrency := 1
+	if c, ok := compute.Provider["concurrency"]; ok {
+		if cInt, okt := c.(int); okt {
+			concurrency = cInt
+		}
+	}
+	dockerComputeProviderConfig := DockerComputeProviderConfig{
+		Concurrency: concurrency,
+	}
+
+	if compute.SecretsManager != nil {
+		sm := compute.SecretsManager
+		switch sm.SmType {
+		case "env":
+			esm := NewEnvironmentSecretsManager()
+			for k, v := range sm.Secrets {
+				esm.AddSecret(k, v)
+			}
+			dockerComputeProviderConfig.SecretsManager = esm
+		default:
+			return nil, fmt.Errorf("invalid secrets manager type.  type: %s is unsupported", sm.SmType)
+		}
+	}
+
+	computeProvider := NewDockerComputeProvider(dockerComputeProviderConfig)
+
+	return computeProvider, nil
+}
+
+type CmdComputeConfig struct {
+	Name           string                     `json:"name"`
+	Provider       map[string]any             `json:"provider"`
+	Plugins        []string                   `json:"plugins"`
+	Event          map[string]any             `json:"event"`
+	SecretsManager *CommandLineSecretsManager `json:"secrets-manager"`
+}
+
+type CommandLineSecretsManager struct {
+	SmType  string            `json:"type"`
+	Secrets map[string]string `json:"secrets"`
+}
+
+type CmdLineManifests []CmdLineManifest
+
+func (clms CmdLineManifests) ToComputeManifests() []ComputeManifest {
+	//set ids
+	for i := range clms {
+		clms[i].ManifestID = uuid.New()
+	}
+
+	//create compute manifests and update deps
+	computeManifests := make([]ComputeManifest, len(clms))
+	for i := range clms {
+		m := clms[i]
+		depcount := len(m.DependsOn)
+		if depcount > 0 {
+			dependencies := make([]uuid.UUID, depcount)
+			for i, dep := range m.DependsOn {
+				dm, err := clms.GetManifest(dep)
+				if err != nil {
+					log.Fatalf("manifest error: %s\n", err)
+				}
+				dependencies[i] = dm.ManifestID
+			}
+		}
+		computeManifests[i] = clms[i].ComputeManifest
+	}
+	return computeManifests
+}
+
+func (clms CmdLineManifests) GetManifest(filename string) (CmdLineManifest, error) {
+	for _, clm := range clms {
+		if clm.FileName == filename {
+			return clm, nil
+		}
+	}
+	return CmdLineManifest{}, fmt.Errorf("invalid manifest: %s not found", filename)
+}
+
+type CmdLineManifest struct {
+	DependsOn []string `json:"depends-on"`
+	FileName  string
+	ComputeManifest
+}
