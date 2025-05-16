@@ -1,0 +1,56 @@
+{
+    "manifest_name":     "aggregator-max",
+    "plugin_definition": "CC-AGGREGATOR-PLUGIN",
+    "stores": [
+        {
+            "name":      "FFRD",
+            "store_type": "S3",
+            "profile": "FFRD",
+            "params": {
+                "root": "/model-library/muncie"
+            }
+        }
+    ],
+    "inputs":{
+      "data_sources": [
+        {
+            "name": "{ATTR::modelPrefix}.b04",
+            "paths": ["ras/{ATTR::modelPath}/{ATTR::modelPrefix}.b04"],
+            "store_name": "FFRD"   
+        },
+        {
+            "name": "{ATTR::modelPrefix}.c02",
+            "paths": ["ras/{ATTR::modelPath}/{ATTR::modelPrefix}.c02"],
+            "store_name": "FFRD"   
+        },
+        {
+            "name": "{ATTR::modelPrefix}.g04.hdf",
+            "paths": ["ras/{ATTR::modelPath}/{ATTR::modelPrefix}.g04.hdf"],
+            "store_name": "FFRD"   
+        },
+        {
+            "name": "{ATTR::modelPrefix}.p04.tmp.hdf",
+            "paths": ["ras/{ATTR::modelPath}/{ATTR::modelPrefix}.p04.tmp.hdf"],
+            "store_name": "FFRD"   
+        },
+        {
+            "name": "{ATTR::modelPrefix}.x04",
+            "paths": ["ras/{ATTR::modelPath}/{ATTR::modelPrefix}.x04"],
+            "store_name": "FFRD"   
+        }
+      ]
+    },
+    "outputs":[
+      {
+        "name": "{ATTR::modelPrefix}.p04.tmp.hdf",
+        "paths": ["{ATTR::modelPrefix}.p04.hdf"],
+        "store_name": "FFRD"   
+      }
+    ],
+    "actions": [
+    {
+      "type": "raster-algebra2",
+      "description": "raster-algebra"
+    }
+  ]
+}

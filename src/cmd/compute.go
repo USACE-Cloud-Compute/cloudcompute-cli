@@ -21,6 +21,10 @@ type CmdCompute struct {
 	compute        CloudCompute
 }
 
+// Register reads and registers all plugins specified in the compute configuration.
+// It iterates over each plugin path provided in the configuration, reads the plugin manifest,
+// and then attempts to register it with the provider. If any step fails, it logs a fatal error
+// and exits the program.
 func (c *CmdCompute) Register() {
 	plugins := make([]*Plugin, len(c.computeConfig.Plugins))
 
@@ -41,6 +45,17 @@ func (c *CmdCompute) Register() {
 	}
 }
 
+// Run executes the compute command by processing manifests, generating events,
+// and initiating a CloudCompute instance.
+//
+// It performs the following steps:
+// 1. Retrieves the list of manifest files from the compute configuration.
+// 2. Reads each manifest file into a CmdLineManifest structure.
+// 3. Assigns a unique ID to each manifest and stores them in a slice.
+// 4. Converts the slice of CmdLineManifests to ComputeManifests.
+// 5. Creates an EventList containing the computed manifests.
+// 6. Initializes a CloudCompute instance with the necessary parameters.
+// 7. Executes the CloudCompute instance and handles any errors that occur.
 func (c *CmdCompute) Run() {
 	manifestList, ok := c.computeConfig.Event["compute-manifests"]
 	if !ok {
@@ -60,7 +75,6 @@ func (c *CmdCompute) Run() {
 		manifest.FileName = manifestFile.(string) //@TODO type inference can result in a panic.  Revisit later after finalizing file formats
 		manifests[i] = *manifest
 	}
-	fmt.Println("done")
 
 	computeManifests := manifests.ToComputeManifests()
 
@@ -91,6 +105,9 @@ func (c *CmdCompute) Run() {
 	c.compute = ccCompute
 }
 
+// WaitForJobs continuously monitors the status of jobs associated with a compute instance.
+// It periodically checks if any jobs are still running. If no jobs are found in the "RUNNING" state,
+// it sets the `jobsRunning` flag to false and prints "Shutting Down".
 func (c *CmdCompute) WaitForJobs() {
 	jobsRunning := true
 	for jobsRunning {
@@ -103,7 +120,11 @@ func (c *CmdCompute) WaitForJobs() {
 			JobSummaryFunction: func(summaries []JobSummary) {
 				count := 0
 				for _, summary := range summaries {
-					if summary.Status == "RUNNING" {
+					if summary.Status == "RUNNING" ||
+						summary.Status == "SUBMITTED" ||
+						summary.Status == "PENDING" ||
+						summary.Status == "STARTING" ||
+						summary.Status == "RUNNABLE" {
 						count++
 					}
 				}
@@ -128,8 +149,8 @@ func awsCompute(compute *CmdComputeConfig) (ComputeProvider, error) {
 func dockerCompute(compute *CmdComputeConfig) (ComputeProvider, error) {
 	concurrency := 1
 	if c, ok := compute.Provider["concurrency"]; ok {
-		if cInt, okt := c.(int); okt {
-			concurrency = cInt
+		if cJson, okt := c.(float64); okt {
+			concurrency = int(cJson)
 		}
 	}
 	dockerComputeProviderConfig := DockerComputeProviderConfig{
@@ -170,6 +191,10 @@ type CommandLineSecretsManager struct {
 
 type CmdLineManifests []CmdLineManifest
 
+// ToComputeManifests converts CmdLineManifests into a slice of ComputeManifest.
+// It assigns unique UUIDs to each manifest and resolves dependencies by mapping
+// them to their respective ManifestIDs. If a dependency cannot be found, it logs
+// a fatal error.
 func (clms CmdLineManifests) ToComputeManifests() []ComputeManifest {
 	//set ids
 	for i := range clms {
@@ -190,6 +215,7 @@ func (clms CmdLineManifests) ToComputeManifests() []ComputeManifest {
 				}
 				dependencies[i] = dm.ManifestID
 			}
+			clms[i].Dependencies = dependencies
 		}
 		computeManifests[i] = clms[i].ComputeManifest
 	}

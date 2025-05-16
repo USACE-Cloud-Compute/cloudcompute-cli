@@ -1,6 +1,7 @@
 ## Manifestor
 
-Manifestor is a command line tool for running plugins.  This tools can submit jobs to cloud and local compute providers but is primarily intended to support local development.  
+Manifestor is a command line tool for registering and running computations using specified providers.
+It supports Docker and AWS Batch as compute providers. 
 
 Manifestor jobs are configured as a set of json files. At a minumum, you will need the following:
 
@@ -70,10 +71,16 @@ At this point you should be able to run the hello world example by executing the
 ``` bash
 >./manifestor --envFile=.env run data/hello-world/compute.json
 ```
+Notes
+When running with the Docker provider, the tool will automatically register the plugin before running.
+The `compute.WaitForJobs()` function is called only when using the Docker provider to ensure that all jobs complete before exiting.
 
+For any issues or further questions, please refer to the GitHub repository or contact the support team.
 
-
-
-
+#building:
+```bash
+>> cd src
+>> go build -o manifestor ./cmd
+```
 
 

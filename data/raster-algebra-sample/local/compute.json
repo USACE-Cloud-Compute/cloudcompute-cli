@@ -2,12 +2,17 @@
     "name": "Raster Algebra Test",
     "provider":{
         "type":"docker",
-        "concurrency":1,
+        "concurrency":5,
         "queue": "docker-local"
     },
     "plugins": ["aggregator-plugin-manifest-local-docker.json"],
     "event":{
-        "compute-manifests":["raster-algebra-compute-manifest.json"]
+        "compute-manifests":[
+            "raster-algebra-compute-manifest1.json",
+            "raster-algebra-compute-manifest2.json",
+            "raster-algebra-compute-manifest3.json",
+            "raster-algebra-compute-manifest4.json"
+        ]
     },
     "secrets-manager":{
         "type": "env",
