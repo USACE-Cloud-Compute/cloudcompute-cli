@@ -1,0 +1,17 @@
+{
+    "name": "Hello World Test",
+    "provider":{
+        "type":"docker",
+        "concurrency":2,
+        "queue": "docker-local"
+    },
+    "plugins": ["hello-world-plugin.json"],
+    "event":{
+        "compute-manifests":["hello-world-manifest1.json","hello-world-manifest2.json"]
+    },    
+    "generator":{
+        "type": "stream",
+        "file": "../../data/hello-world/important_events.csv",
+        "delimiter": ","
+    }
+}

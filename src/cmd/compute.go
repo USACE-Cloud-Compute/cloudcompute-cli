@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,6 +11,11 @@ import (
 	. "github.com/usace/cloudcompute/providers/awsbatch"
 	. "github.com/usace/cloudcompute/providers/docker"
 	"github.com/usace/manifestor/internal/utils"
+)
+
+const (
+	arrayGenType  string = "array"
+	streamGenType string = "stream"
 )
 
 type CmdCompute struct {
@@ -78,14 +84,19 @@ func (c *CmdCompute) Run() {
 
 	computeManifests := manifests.ToComputeManifests()
 
-	//event generator
-	eventGenerator := NewEventList([]Event{
-		{
-			ID:              uuid.New(),
-			EventIdentifier: "1",
-			Manifests:       computeManifests,
-		},
-	})
+	eventGenerator, err := buildEventGenerator(computeManifests, c.computeConfig)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// //event generator
+	// eventGenerator := NewEventList([]Event{
+	// 	{
+	// 		ID:              uuid.New(),
+	// 		EventIdentifier: "1",
+	// 		Manifests:       computeManifests,
+	// 	},
+	// })
 
 	//cc Compute
 	computeID := uuid.New()
@@ -98,11 +109,65 @@ func (c *CmdCompute) Run() {
 		ComputeProvider: c.provider,
 	}
 
-	err := ccCompute.Run()
+	err = ccCompute.Run()
 	if err != nil {
 		log.Fatalln(err)
 	}
 	c.compute = ccCompute
+}
+
+func buildEventGenerator(computeManifests []ComputeManifest, config *CmdComputeConfig) (EventGenerator, error) {
+
+	//must have a generator config and a generator type, or we fall back to a
+	//list generator with a single event
+	if config.Generator != nil {
+
+		event := Event{
+			ID:              uuid.New(),
+			EventIdentifier: "1",
+			Manifests:       computeManifests,
+		}
+
+		if genType, ok := config.Generator["type"]; ok {
+			switch genType {
+			case arrayGenType:
+				var start int64 = -1
+				var end int64 = -1
+				if st, stok := config.Generator["start"]; stok {
+					start = int64(st.(float64))
+				}
+				if en, enok := config.Generator["end"]; enok {
+					end = int64(en.(float64))
+				}
+
+				if start < 0 || end < 0 {
+					return nil, fmt.Errorf("invalid Array Event generator start or end")
+				}
+				return NewArrayEventGenerator(event, start, end)
+
+			case streamGenType:
+				if filepath, ok := config.Generator["file"]; ok {
+					if delimiter, ok := config.Generator["delimiter"]; ok {
+						file, err := os.Open(filepath.(string))
+						if err == nil {
+							return NewStreamingEventGeneratorForReader(event, file, delimiter.(string))
+						}
+					}
+				}
+				return nil, fmt.Errorf("invalid Stream Event generator")
+			}
+		}
+	}
+
+	//default to a list event generator with a single event
+	return NewEventList([]Event{
+		{
+			ID:              uuid.New(),
+			EventIdentifier: "1",
+			Manifests:       computeManifests,
+		},
+	}), nil
+
 }
 
 // WaitForJobs continuously monitors the status of jobs associated with a compute instance.
@@ -182,6 +247,7 @@ type CmdComputeConfig struct {
 	Plugins        []string                   `json:"plugins"`
 	Event          map[string]any             `json:"event"`
 	SecretsManager *CommandLineSecretsManager `json:"secrets-manager"`
+	Generator      map[string]any             `json:"generator"`
 }
 
 type CommandLineSecretsManager struct {

@@ -7,6 +7,6 @@
     },
     "plugins": ["hello-world-plugin.json"],
     "event":{
-        "compute-manifests":["hello-world-manifest1.json","hello-world-manifest2.json"]
+        "compute-manifests":["hello-world-manifest1.json"]
     }
 }
