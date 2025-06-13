@@ -13,6 +13,8 @@ import (
 	"github.com/usace/manifestor/internal/utils"
 )
 
+type TerminationLevel string
+
 const (
 	arrayGenType  string = "array"
 	streamGenType string = "stream"
@@ -25,6 +27,23 @@ type CmdCompute struct {
 	computeFileDir string
 	computeQueue   string
 	compute        CloudCompute
+	providerType   string
+}
+
+func (c *CmdCompute) Terminate(terminationLevel string, terminationIdentifier string, terminationMessage string) error {
+
+	tji := TerminateJobInput{
+		Reason:   terminationMessage,
+		JobQueue: c.computeQueue,
+		Query: JobsSummaryQuery{
+			QueryLevel: terminationLevel,
+			QueryValue: JobNameParts{
+				Compute: terminationIdentifier,
+			},
+		},
+	}
+
+	return c.provider.TerminateJobs(tji)
 }
 
 // Register reads and registers all plugins specified in the compute configuration.
@@ -89,16 +108,6 @@ func (c *CmdCompute) Run() {
 		log.Fatalln(err)
 	}
 
-	// //event generator
-	// eventGenerator := NewEventList([]Event{
-	// 	{
-	// 		ID:              uuid.New(),
-	// 		EventIdentifier: "1",
-	// 		Manifests:       computeManifests,
-	// 	},
-	// })
-
-	//cc Compute
 	computeID := uuid.New()
 
 	ccCompute := CloudCompute{
