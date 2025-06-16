@@ -8,6 +8,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/jessevdk/go-flags"
 	. "github.com/usace/cloudcompute"
 	"github.com/usace/manifestor/internal/utils"
@@ -29,7 +30,8 @@ type CmdOpts struct {
 }
 
 type RunCommand struct {
-	Global *CmdOpts
+	Global       *CmdOpts
+	JobStorePath string `short:"j" long:"jobStore" description:"Optional local csv file for writing the list of jobs submitted to the compute provider"`
 }
 
 func (rc *RunCommand) Execute(args []string) error {
@@ -38,6 +40,15 @@ func (rc *RunCommand) Execute(args []string) error {
 		fmt.Fprintln(os.Stderr, "Error running compute:")
 		return err
 	}
+
+	if rc.JobStorePath != "" {
+		jobStore, err := utils.NewCsvJobStore(rc.JobStorePath)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error creating Job Store file:", err)
+		}
+		compute.jobStore = jobStore
+	}
+
 	if compute.providerType == DOCKER_PROVIDER {
 		compute.Register()
 	}
@@ -81,11 +92,48 @@ func (tc *TerminateCommand) Execute(args []string) error {
 	return nil
 }
 
+type LogCommand struct {
+	Global *CmdOpts
+	Args   struct {
+		JobId string `positional-arg-name:"id" description:"job identifier: The guid identifier for the compute provider job"`
+	} `positional-args:"yes"`
+}
+
+func (lc *LogCommand) Execute(args []string) error {
+	compute, err := initCompute(*lc.Global)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error getting log:", err)
+		return err
+	}
+
+	var token *string = aws.String("")
+
+	for {
+		logs, err := compute.GetLog(lc.Args.JobId, token)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error getting log:", err)
+			return err
+		}
+
+		if logs.Token == nil || *token == *logs.Token {
+			break
+		}
+		token = logs.Token
+
+		for _, logrow := range logs.Logs {
+			fmt.Println(logrow)
+		}
+	}
+
+	return nil
+}
+
 type Options struct {
 	CmdOpts
 	Run       RunCommand       `command:"run" description:"Run the service"`
 	Register  RegisterCommand  `command:"register" description:"Register the service"`
 	Terminate TerminateCommand `command:"terminate" description:"Terminate the service"`
+	Logs      LogCommand       `command:"log" description:"Get job logs"`
 }
 
 func main() {
@@ -95,10 +143,12 @@ func main() {
 	opts.Run.Global = &opts.CmdOpts
 	opts.Register.Global = &opts.CmdOpts
 	opts.Terminate.Global = &opts.CmdOpts
+	opts.Logs.Global = &opts.CmdOpts
 
 	parser := flags.NewParser(&opts, flags.Default)
 
 	if _, err := parser.Parse(); err != nil {
+		fmt.Fprintln(os.Stderr, "unable to run manifestor:", err)
 		os.Exit(1)
 	}
 }
@@ -154,96 +204,6 @@ func initCompute(options CmdOpts) (*CmdCompute, error) {
 	}, nil
 
 }
-
-/*
-type CmdOpts struct {
-	EnvFile string `short:"e" long:"envFile" description:"Environment file for the compute run"`
-	Args    struct {
-		Bin         string
-		Command     string `description:"The command to run {run/register}. Running on local docker will auto register the plugin."`
-		ComputeFile string `description:"The absolute or relative path to the compute file"`
-	} `positional-args:"yes"`
-}
-
-func main() {
-
-	options := CmdOpts{}
-
-	_, err := flags.ParseArgs(&options, os.Args)
-	if err != nil {
-		log.Fatalln("Exiting")
-	}
-
-	doCompute(options)
-}
-
-func doCompute(options CmdOpts) {
-
-	if options.EnvFile != "" {
-		err := setEnv(options.EnvFile)
-		if err != nil {
-			log.Fatalln("Failed to set environment")
-		}
-	}
-
-	computefiledir := path.Dir(options.Args.ComputeFile)
-
-	computeConfig, err := utils.ReadJson[CmdComputeConfig](options.Args.ComputeFile)
-	if err != nil {
-		log.Fatalf("Unable to read the compute file: %s\n", err)
-	}
-
-	///////////////////
-	var computeProvider ComputeProvider
-	providerQueue, ok := computeConfig.Provider["queue"].(string)
-	if !ok {
-		log.Fatalln("No queue was specified for the compute provider")
-	}
-	providerType, ok := computeConfig.Provider["type"]
-	if !ok {
-		log.Fatalln("No compute provider defined in the compute.json file.")
-	}
-	switch providerType {
-	case DOCKER_PROVIDER:
-		fmt.Println("Using the docker compute provider")
-		computeProvider, err = dockerCompute(computeConfig)
-		if err != nil {
-			log.Fatalln(err)
-		}
-	case AWSBATCH_PROVIDER:
-		fmt.Println("Using the AWS Batch compute provider")
-		computeProvider, err = awsCompute(computeConfig)
-		if err != nil {
-			log.Fatalln(err)
-		}
-	default:
-		log.Fatalf("Invalid compute provider: %s\n", providerType)
-	}
-
-	compute := CmdCompute{
-		provider:       computeProvider,
-		computeConfig:  computeConfig,
-		computeFileDir: computefiledir,
-		computeQueue:   providerQueue,
-	}
-
-	switch options.Args.Command {
-	case CMD_REGISTER:
-		compute.Register()
-	case CMD_RUN:
-		if providerType == DOCKER_PROVIDER {
-			compute.Register() //always register the plugins for a local docker run
-		}
-		compute.Run()
-		if providerType == DOCKER_PROVIDER {
-			compute.WaitForJobs() //don't let the main goroutine run out until all of the jobs have completed
-		}
-	case CMD_TERMINATE:
-		log.Println("Terminate")
-		compute.Terminate(SUMMARY_COMPUTE, "cfbf5619-9abd-45f8-a0aa-f01bc67abffe", "I screwed up!")
-	}
-}
-*/
 
 func setEnv(envfile string) error {
 	vars, err := readLines(envfile)

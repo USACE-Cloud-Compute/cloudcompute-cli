@@ -69,15 +69,64 @@ CC_AWS_ENDPOINT=http://localhost:9000
 
 At this point you should be able to run the hello world example by executing the following:
 ``` bash
->./manifestor --envFile=.env run data/hello-world/compute.json
+>./manifestor --envFile=.env --computeFile=data/hello-world/compute.json run 
 ```
-Notes
+
+the manifestor command has the following syntax:
+> manifestor --envFile={path to env file} --computeFile={path to compute file} {command} {subcommands}
+
+there are four possible commands to execute:
+ 1) **run**: the run command executes a compute job. syntax is:
+    >manifestor run {optional job store}
+
+    example:
+    ```bash
+    ./manifestor --envFile=.env-aws --computeFile=data/ras-sample/aws/compute.json run --jobStore=data/ras-sample/aws/jobs.csv
+    ```
+    This will run a compute and export the compute identifiers to a csv file **jobs.csv**  The output of the jobs file is comma separated values containing:
+
+    ![alt text](docs/img/job-store-csv.png)
+
+    Note that the Compute, Event, and Job Identifiers are created and used by cloud compute.  The ComputeProviderJob is the identifier natively used by the compute provider.  The payload guild represents the folder in the cloud compute store that holds the jobs payload and the event identifier is the string identifier injected into the environment for each run.
+
+ 2) **register**: registers a plugin manifest with a compute environment.
+    >manifestor register 
+
+    example:
+    ```bash
+    ./manifestor --envFile=.env-aws --computeFile=data/ras-sample/aws/compute.json register
+    ```
+
+ 3) **terminate**: terminates jobs in the compute provider.
+    >manifestor terminate {termination-level} {identifier} {termination-message}
+    
+    - termination-level is one of three categories to terminate jobs on: `COMPUTE|EVENT|JOB`.  This is combined with the identifier to delete a set of jobs.
+    - identifier is the GUID of the compute/event/job that will be used for jobs termination.
+    - termination message is the message that will be recorded by the compute probvider when jobs are terminated.
+
+    example:
+    ```bash
+    ./manifestor --envFile=.env-aws --computeFile=data/ras-sample/aws/compute.json terminate COMPUTE 068ff6fe-d8d9-48af-b897-b937a7e14dae "more testing tools"
+    ```
+ 4) **logs**: extract job logs from the compute provider.
+    >manifestor logs {compute provider job identifier}
+   
+    - compute provider job identifier is the native identifier of the compute provider created for the job
+
+    example:
+    ```bash
+    ./manifestor --envFile=.env --computeFile=data/ras-sample/aws/compute.json log 20e84f68-56dc-46fd-b5f3-c2494e4c5f83
+    ```
+
+
+
+## Notes
 When running with the Docker provider, the tool will automatically register the plugin before running.
 The `compute.WaitForJobs()` function is called only when using the Docker provider to ensure that all jobs complete before exiting.
 
 For any issues or further questions, please refer to the GitHub repository or contact the support team.
 
-#building:
+#### building:
 ```bash
 >> cd src
 >> go build -o manifestor ./cmd

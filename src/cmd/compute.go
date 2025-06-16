@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,6 +29,15 @@ type CmdCompute struct {
 	computeQueue   string
 	compute        CloudCompute
 	providerType   string
+	jobStore       CcJobStore
+}
+
+func (c *CmdCompute) GetLog(jobId string, token *string) (JobLogOutput, error) {
+	output, err := c.provider.JobLog(jobId, token)
+	if err != nil {
+		return JobLogOutput{}, err
+	}
+	return output, nil
 }
 
 func (c *CmdCompute) Terminate(terminationLevel string, terminationIdentifier string, terminationMessage string) error {
@@ -36,7 +46,7 @@ func (c *CmdCompute) Terminate(terminationLevel string, terminationIdentifier st
 		Reason:   terminationMessage,
 		JobQueue: c.computeQueue,
 		Query: JobsSummaryQuery{
-			QueryLevel: terminationLevel,
+			QueryLevel: strings.ToUpper(terminationLevel),
 			QueryValue: JobNameParts{
 				Compute: terminationIdentifier,
 			},
@@ -116,6 +126,7 @@ func (c *CmdCompute) Run() {
 		JobQueue:        c.computeQueue,
 		Events:          eventGenerator,
 		ComputeProvider: c.provider,
+		JobStore:        c.jobStore,
 	}
 
 	err = ccCompute.Run()
