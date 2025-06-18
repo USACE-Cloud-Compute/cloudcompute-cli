@@ -9,167 +9,165 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/jessevdk/go-flags"
+	"github.com/spf13/cobra"
 	. "github.com/usace/cloudcompute"
 	"github.com/usace/manifestor/internal/utils"
 )
 
 const (
-	DOCKER_PROVIDER          string = "docker"
-	AWSBATCH_PROVIDER        string = "awsbatch"
-	SECRET_MANAGER_IN_MEMORY string = "in-memory"
-	SECRET_MANAGER_ENV       string = "env"
-	CMD_REGISTER             string = "register"
-	CMD_RUN                  string = "run"
-	CMD_TERMINATE            string = "terminate"
+	DOCKER_PROVIDER          = "docker"
+	AWSBATCH_PROVIDER        = "awsbatch"
+	SECRET_MANAGER_IN_MEMORY = "in-memory"
+	SECRET_MANAGER_ENV       = "env"
 )
 
-type CmdOpts struct {
-	ComputeFile string `short:"c" long:"computeFile" description:"absolute or relative path to the compute file (required)" required:"false"`
-	EnvFile     string `short:"e" long:"envFile" description:"Environment file for the compute run"`
-}
+// global flags
+var (
+	computeFile string
+	envFile     string
+	jobStore    string
+)
 
-type RunCommand struct {
-	Global       *CmdOpts
-	JobStorePath string `short:"j" long:"jobStore" description:"Optional local csv file for writing the list of jobs submitted to the compute provider"`
-}
+// commands
+var (
+	runCmd = &cobra.Command{
+		Use:   "run",
+		Short: "Run the compute job",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			compute, err := initCompute()
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error running compute:", err)
+				return err
+			}
 
-func (rc *RunCommand) Execute(args []string) error {
-	compute, err := initCompute(*rc.Global)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error running compute:")
-		return err
+			if jobStore != "" {
+				jobStoreWriter, err := utils.NewCsvJobStore(jobStore)
+				if err != nil {
+					fmt.Fprintln(os.Stderr, "Error creating Job Store file:", err)
+				}
+				compute.jobStore = jobStoreWriter
+			}
+
+			if compute.providerType == DOCKER_PROVIDER {
+				compute.Register()
+			}
+			compute.Run()
+			if compute.providerType == DOCKER_PROVIDER {
+				compute.WaitForJobs()
+			}
+			return nil
+		},
 	}
 
-	if rc.JobStorePath != "" {
-		jobStore, err := utils.NewCsvJobStore(rc.JobStorePath)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error creating Job Store file:", err)
-		}
-		compute.jobStore = jobStore
+	registerCmd = &cobra.Command{
+		Use:   "register",
+		Short: "Register a plugin with a compute provider",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			compute, err := initCompute()
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error running compute:", err)
+				return err
+			}
+			compute.Register()
+			return nil
+		},
 	}
 
-	if compute.providerType == DOCKER_PROVIDER {
-		compute.Register()
-	}
-	compute.Run()
-	if compute.providerType == DOCKER_PROVIDER {
-		compute.WaitForJobs() //don't let the main goroutine run out until all of the jobs have completed
-	}
-	return nil
-}
-
-type RegisterCommand struct {
-	Global *CmdOpts
-}
-
-func (rc *RegisterCommand) Execute(args []string) error {
-	compute, err := initCompute(*rc.Global)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error running compute:")
-		return err
-	}
-	compute.Register()
-	return nil
-}
-
-type TerminateCommand struct {
-	Global *CmdOpts
-	Args   struct {
-		TerminateLevel   string `positional-arg-name:"level" description:"Termination level: one of the following options: COMPUTE, EVENT, JOB"`
-		TerminateId      string `positional-arg-name:"id" description:"Termination identifier: The guid identifier for the Compute, Event, or Job being terminated"`
-		TerminateMessage string `positional-arg-name:"message" description:"Message for the compute provider describing why the jobs were terminated"`
-	} `positional-args:"yes"`
-}
-
-func (tc *TerminateCommand) Execute(args []string) error {
-	compute, err := initCompute(*tc.Global)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error running compute:")
-		return err
-	}
-	compute.Terminate(tc.Args.TerminateLevel, tc.Args.TerminateId, tc.Args.TerminateMessage)
-	return nil
-}
-
-type LogCommand struct {
-	Global *CmdOpts
-	Args   struct {
-		JobId string `positional-arg-name:"id" description:"job identifier: The guid identifier for the compute provider job"`
-	} `positional-args:"yes"`
-}
-
-func (lc *LogCommand) Execute(args []string) error {
-	compute, err := initCompute(*lc.Global)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error getting log:", err)
-		return err
+	terminateCmd = &cobra.Command{
+		Use:   "terminate [level] [id] [message]",
+		Short: "Terminate job(s) on a compute provider",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			compute, err := initCompute()
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error running compute:", err)
+				return err
+			}
+			level, id, message := args[0], args[1], args[2]
+			compute.Terminate(level, id, message)
+			return nil
+		},
 	}
 
-	var token *string = aws.String("")
+	logCmd = &cobra.Command{
+		Use:   "log [jobID]",
+		Short: "Get job logs from a compute provider",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			compute, err := initCompute()
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error getting log:", err)
+				return err
+			}
 
-	for {
-		logs, err := compute.GetLog(lc.Args.JobId, token)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error getting log:", err)
-			return err
-		}
-
-		if logs.Token == nil || *token == *logs.Token {
-			break
-		}
-		token = logs.Token
-
-		for _, logrow := range logs.Logs {
-			fmt.Println(logrow)
-		}
+			jobID := args[0]
+			var token *string = aws.String("")
+			for {
+				logs, err := compute.GetLog(jobID, token)
+				if err != nil {
+					fmt.Fprintln(os.Stderr, "Error getting log:", err)
+					return err
+				}
+				if logs.Token == nil || *token == *logs.Token {
+					break
+				}
+				token = logs.Token
+				for _, logrow := range logs.Logs {
+					fmt.Println(logrow)
+				}
+			}
+			return nil
+		},
 	}
 
-	return nil
-}
+	rootCmd = &cobra.Command{
+		Use:   "manifestor",
+		Short: "Manifestor CLI to run, register, terminate, and fetch logs for cloud compute.",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if envFile != "" {
+				return setEnv(envFile)
+			}
+			return nil
+		},
+	}
+)
 
-type Options struct {
-	CmdOpts
-	Run       RunCommand       `command:"run" description:"Run the service"`
-	Register  RegisterCommand  `command:"register" description:"Register the service"`
-	Terminate TerminateCommand `command:"terminate" description:"Terminate the service"`
-	Logs      LogCommand       `command:"log" description:"Get job logs"`
+func initializeCommands() {
+	//root
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
+	rootCmd.PersistentFlags().StringVarP(&computeFile, "computeFile", "c", "", "Path to compute file (required)")
+	rootCmd.PersistentFlags().StringVarP(&envFile, "envFile", "e", "", "Path to env file")
+	rootCmd.MarkPersistentFlagRequired("computeFile")
+
+	//run
+	runCmd.Flags().StringP("jobStore", "j", "", "Optional local csv file for writing the list of jobs submitted to the compute provider")
 }
 
 func main() {
-	var opts Options
+	initializeCommands()
+	rootCmd.AddCommand(runCmd)
+	rootCmd.AddCommand(registerCmd)
+	rootCmd.AddCommand(terminateCmd)
+	rootCmd.AddCommand(logCmd)
 
-	// Inject global options into subcommands
-	opts.Run.Global = &opts.CmdOpts
-	opts.Register.Global = &opts.CmdOpts
-	opts.Terminate.Global = &opts.CmdOpts
-	opts.Logs.Global = &opts.CmdOpts
-
-	parser := flags.NewParser(&opts, flags.Default)
-
-	if _, err := parser.Parse(); err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, "unable to run manifestor:", err)
 		os.Exit(1)
 	}
 }
 
-func initCompute(options CmdOpts) (*CmdCompute, error) {
-	if options.EnvFile != "" {
-		err := setEnv(options.EnvFile)
-		if err != nil {
-			return nil, err
-		}
+func initCompute() (*CmdCompute, error) {
+	if computeFile == "" {
+		return nil, fmt.Errorf("compute file not provided")
 	}
 
-	computefiledir := path.Dir(options.ComputeFile)
-
-	computeConfig, err := utils.ReadJson[CmdComputeConfig](options.ComputeFile)
+	computefiledir := path.Dir(computeFile)
+	computeConfig, err := utils.ReadJson[CmdComputeConfig](computeFile)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Unable to read the compute file:")
 		return nil, err
 	}
 
-	var computeProvider ComputeProvider
 	providerQueue, ok := computeConfig.Provider["queue"].(string)
 	if !ok {
 		return nil, fmt.Errorf("no queue was specified for the compute provider")
@@ -178,21 +176,20 @@ func initCompute(options CmdOpts) (*CmdCompute, error) {
 	if !ok {
 		log.Fatalln("No compute provider defined in the compute.json file.")
 	}
+
+	var computeProvider ComputeProvider
 	switch providerType {
 	case DOCKER_PROVIDER:
 		fmt.Println("Using the docker compute provider")
 		computeProvider, err = dockerCompute(computeConfig)
-		if err != nil {
-			return nil, err
-		}
 	case AWSBATCH_PROVIDER:
 		fmt.Println("Using the AWS Batch compute provider")
 		computeProvider, err = awsCompute(computeConfig)
-		if err != nil {
-			return nil, err
-		}
 	default:
 		log.Fatalf("Invalid compute provider: %s\n", providerType)
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	return &CmdCompute{
@@ -202,7 +199,6 @@ func initCompute(options CmdOpts) (*CmdCompute, error) {
 		computeQueue:   providerQueue,
 		providerType:   providerType.(string),
 	}, nil
-
 }
 
 func setEnv(envfile string) error {
@@ -211,13 +207,12 @@ func setEnv(envfile string) error {
 		return err
 	}
 	for _, v := range vars {
-		vals := strings.Split(v, "=")
+		vals := strings.SplitN(v, "=", 2)
 		if len(vals) != 2 {
-			return fmt.Errorf("invalid environment variable")
+			return fmt.Errorf("invalid environment variable: %s", v)
 		}
-		err := os.Setenv(vals[0], vals[1])
-		if err != nil {
-			log.Println("Unable to set environment variable")
+		if err := os.Setenv(vals[0], vals[1]); err != nil {
+			log.Printf("Unable to set environment variable %s", v)
 			return err
 		}
 	}

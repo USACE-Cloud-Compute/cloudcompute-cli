@@ -39,6 +39,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/invopop/jsonschema v0.13.0 // indirect
 	github.com/jessevdk/go-flags v1.6.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
@@ -49,6 +50,8 @@ require (
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
+	github.com/spf13/cobra v1.9.1 // indirect
+	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/usace/cc-go-sdk v0.0.0-20250320132651-dd5239e5e7ac // indirect
 	github.com/usace/cloudcompute v0.0.0-20250321203212-c13f45222128 // indirect
 	github.com/usace/filesapi v0.0.0-20250320132414-61c781325b9a // indirect
