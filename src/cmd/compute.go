@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -73,11 +74,17 @@ func (c *CmdCompute) Register() {
 	}
 
 	for _, plugin := range plugins {
-		_, err := c.provider.RegisterPlugin(plugin)
+		registrationOutput, err := c.provider.RegisterPlugin(plugin)
 		if err != nil {
 			log.Fatalf("Failed to register plugin: %s: %s\n", plugin.Name, err)
 		}
+		data, err := json.Marshal(registrationOutput)
+		if err != nil {
+			log.Printf("invalid registration return value: %s\n", err)
+		}
+		fmt.Println(string(data))
 	}
+
 }
 
 // Run executes the compute command by processing manifests, generating events,

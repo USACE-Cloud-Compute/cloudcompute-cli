@@ -52,7 +52,7 @@ require (
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/cobra v1.9.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
-	github.com/usace/cc-go-sdk v0.0.0-20250320132651-dd5239e5e7ac // indirect
+	github.com/usace/cc-go-sdk v0.0.0-20250708142539-ab413ab1d306 // indirect
 	github.com/usace/cloudcompute v0.0.0-20250321203212-c13f45222128 // indirect
 	github.com/usace/filesapi v0.0.0-20250320132414-61c781325b9a // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect

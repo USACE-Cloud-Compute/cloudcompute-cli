@@ -134,6 +134,8 @@ github.com/usace/cc-go-sdk v0.0.0-20240611184425-06f941ff4742 h1:imZfnkdKbA4njho
 github.com/usace/cc-go-sdk v0.0.0-20240611184425-06f941ff4742/go.mod h1:YKzh58ylozTC8hd/lzDsuohoccDByo6Cn0SLPuLhwiQ=
 github.com/usace/cc-go-sdk v0.0.0-20250320132651-dd5239e5e7ac h1:dMjgfJ+6hDYnqThl/BOjypLsNLUcfK+PdHpU7bjZfQU=
 github.com/usace/cc-go-sdk v0.0.0-20250320132651-dd5239e5e7ac/go.mod h1:ZWHkv/kUty88wY4bp2MtW90AgKkY4gEClpmEYMEaZ0Q=
+github.com/usace/cc-go-sdk v0.0.0-20250708142539-ab413ab1d306 h1:GGWp7VmXxszMWg6z1byjkp0crXRemk/SVIIGuwwjBnE=
+github.com/usace/cc-go-sdk v0.0.0-20250708142539-ab413ab1d306/go.mod h1:ZWHkv/kUty88wY4bp2MtW90AgKkY4gEClpmEYMEaZ0Q=
 github.com/usace/cloudcompute v0.0.0-20240611184642-db731b6677f4 h1:KrbJwShWbptA99nwFbQvzC3+eOMqPoVHD2tJxMKAGq4=
 github.com/usace/cloudcompute v0.0.0-20240611184642-db731b6677f4/go.mod h1:mokGvlaqO3aOFAi3vb2XwByGEfELCEtn8TIjmf9KyCo=
 github.com/usace/cloudcompute v0.0.0-20250320132826-ada31b4c7fe2 h1:j4tVWhKmpqHeDYmm0pSm3gwvokvc3sAXeUr7t0utOHQ=
