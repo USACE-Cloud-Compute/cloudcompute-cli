@@ -26,6 +26,7 @@ var (
 	computeFile string
 	envFile     string
 	jobStore    string
+	//pluginManifest string //used for register as an alternative to reading manifests from the DAG in the compute file
 )
 
 // commands
@@ -60,16 +61,27 @@ var (
 	}
 
 	registerCmd = &cobra.Command{
-		Use:   "register",
-		Short: "Register a plugin with a compute provider",
+		Use:   "register [plugin manifest file]",
+		Short: "Register plugins with a compute provider.",
+		Long:  "By default, all plugins referenced in the compute file DAG will be registered.  Optionally the command can include a file path to a plugin manifest. If this option is provided, then the register function will only register the given plugin manifest.",
+		Args:  cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+
 			compute, err := initCompute()
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "Error running compute:", err)
 				return err
 			}
-			compute.Register()
-			return nil
+
+			//if there is an argument, it is a pluginManifestFile path
+			if len(args) > 0 {
+				log.Printf("Registering a single plugin manifest: %s", args[0])
+				compute.RegisterManifest(args[0])
+				return nil
+			} else {
+				compute.Register()
+				return nil
+			}
 		},
 	}
 
@@ -140,7 +152,10 @@ func initializeCommands() {
 	rootCmd.MarkPersistentFlagRequired("computeFile")
 
 	//run
-	runCmd.Flags().StringP("jobStore", "j", "", "Optional local csv file for writing the list of jobs submitted to the compute provider")
+	runCmd.Flags().StringVarP(&jobStore, "jobStore", "j", "", "Optional local csv file for writing the list of jobs submitted to the compute provider")
+
+	//register
+	//registerCmd.Flags().StringVarP(&pluginManifest, "pluginManifest", "p", "", "Path to plugin manifest file (for registration only)")
 }
 
 func main() {
@@ -234,3 +249,19 @@ func readLines(path string) ([]string, error) {
 	}
 	return lines, scanner.Err()
 }
+
+/*
+example code for defining custom help output
+// Override the HelpFunc to exclude [flags] when there are no flags
+    exampleSubCmd.SetHelpFunc(func(cmd *cobra.Command, args []string) {
+        if cmd.HasAvailableFlags() {
+            cmd.PrintDefaultHelp()
+        } else {
+            fmt.Fprintf(cmd.OutOrStderr(), "%s\n\n", cmd.Short)
+            fmt.Fprintf(cmd.OutOrStderr(), "Usage:\n  %s\n\n", cmd.UseLine())
+            if len(cmd.Long) > 0 {
+                fmt.Fprintf(cmd.OutOrStderr(), "%s\n\n", cmd.Long)
+            }
+        }
+    })
+*/

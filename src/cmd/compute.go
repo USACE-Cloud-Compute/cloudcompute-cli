@@ -60,7 +60,8 @@ func (c *CmdCompute) Terminate(terminationLevel string, terminationIdentifier st
 // Register reads and registers all plugins specified in the compute configuration.
 // It iterates over each plugin path provided in the configuration, reads the plugin manifest,
 // and then attempts to register it with the provider. If any step fails, it logs a fatal error
-// and exits the program.
+// and exits the program.  If it succeeds it prints the compute provider registration output
+// data for each plugin registered
 func (c *CmdCompute) Register() {
 	plugins := make([]*Plugin, len(c.computeConfig.Plugins))
 
@@ -84,6 +85,28 @@ func (c *CmdCompute) Register() {
 		}
 		fmt.Println(string(data))
 	}
+
+}
+
+// Register reads a single user specified plugin and registers it with the compute configuration.
+// If it succeeds it prints the compute provider registration output data.
+// If it fails, it logs a fatal error and exits the program.
+func (c *CmdCompute) RegisterManifest(pluginManifestFile string) {
+
+	plugin, err := utils.ReadJson[Plugin](pluginManifestFile)
+	if err != nil {
+		log.Fatalf("Unable to read the plugin manifest %s (%s)\n", pluginManifestFile, err)
+	}
+
+	registrationOutput, err := c.provider.RegisterPlugin(plugin)
+	if err != nil {
+		log.Fatalf("Failed to register plugin: %s: %s\n", plugin.Name, err)
+	}
+	data, err := json.Marshal(registrationOutput)
+	if err != nil {
+		log.Printf("invalid registration return value: %s\n", err)
+	}
+	fmt.Println(string(data))
 
 }
 
