@@ -18,19 +18,22 @@ import (
 type TerminationLevel string
 
 const (
-	arrayGenType  string = "array"
-	streamGenType string = "stream"
+	arrayGenType         string = "array"
+	streamGenType        string = "stream"
+	realzBlockGenType    string = "realzblock"
+	concurrentSubmission int    = 10
 )
 
 type CmdCompute struct {
 	//options        CmdOpts
-	provider       ComputeProvider
-	computeConfig  *CmdComputeConfig
-	computeFileDir string
-	computeQueue   string
-	compute        CloudCompute
-	providerType   string
-	jobStore       CcJobStore
+	provider           ComputeProvider
+	computeConfig      *CmdComputeConfig
+	computeFileDir     string
+	computeQueue       string
+	compute            CloudCompute
+	providerType       string
+	jobStore           CcJobStore
+	eventPostProcessor EventProcessor
 }
 
 func (c *CmdCompute) GetLog(jobId string, token *string) (JobLogOutput, error) {
@@ -157,9 +160,11 @@ func (c *CmdCompute) Run() {
 		Events:          eventGenerator,
 		ComputeProvider: c.provider,
 		JobStore:        c.jobStore,
+		EventProcessor:  c.eventPostProcessor,
 	}
 
-	err = ccCompute.Run()
+	//err = ccCompute.Run()
+	err = ccCompute.RunParallel(concurrentSubmission)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -205,6 +210,28 @@ func buildEventGenerator(computeManifests []ComputeManifest, config *CmdComputeC
 					}
 				}
 				return nil, fmt.Errorf("invalid Stream Event generator")
+			case realzBlockGenType:
+				var startRealz int64 = -1
+				var endRealz int64 = -1
+				var startBlock int64 = -1
+				var endBlock int64 = -1
+				if st, stok := config.Generator["startRealz"]; stok {
+					startRealz = int64(st.(float64))
+				}
+				if en, enok := config.Generator["endRealz"]; enok {
+					endRealz = int64(en.(float64))
+				}
+				if st, stok := config.Generator["startBlock"]; stok {
+					startBlock = int64(st.(float64))
+				}
+				if en, enok := config.Generator["endBlock"]; enok {
+					endBlock = int64(en.(float64))
+				}
+
+				if startRealz > -1 && endRealz > -1 && startBlock > -1 && endBlock > -1 {
+					return utils.NewRealzBlockEventGenerator(event, startRealz, endRealz, startBlock, endBlock)
+				}
+				return nil, fmt.Errorf("realz block event generator")
 			}
 		}
 	}

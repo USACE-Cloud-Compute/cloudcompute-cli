@@ -131,5 +131,10 @@ For any issues or further questions, please refer to the GitHub repository or co
 >> cd src
 >> go build -o manifestor ./cmd
 ```
-
+TODO
+ - return new registered name from provider
+ - add unregister
+ - add switch to run that registers and unregisters
+ - logsearch
+ - 
 
