@@ -10,7 +10,7 @@ import (
 
 func TestBlockEventGenerator(t *testing.T) {
 	event := generateTestEvent()
-	eg, _ := NewRealzBlockEventGenerator(event, 2, 5, 10, 15)
+	eg, _ := NewRealzBlockEventGenerator(event, 10, 11, 4, 4)
 	for {
 		event, hasNext, _ := eg.NextEvent()
 		if !hasNext {

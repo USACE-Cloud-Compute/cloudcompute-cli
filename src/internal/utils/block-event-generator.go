@@ -40,14 +40,6 @@ func (rbe *RealzBlockEventGenerator) NextEvent() (cloudcompute.Event, bool, erro
 	defer rbe.mu.Unlock()
 	rbe.numevent++
 	event := rbe.event
-	//event.EventIdentifier = strconv.Itoa(int(rbe.blockPos))
-	// for i := range event.Manifests {
-	// 	event.Manifests[i].Inputs.PayloadAttributes["realz"] = rbe.realzPos
-	// 	//@TODO : for now write the realz number to all attribute locations
-	// 	for a := range event.Manifests[i].Actions {
-	// 		event.Manifests[i].Actions[a].Attributes["realz"] = rbe.realzPos
-	// 	}
-	// }
 	event.EventIdentifier = fmt.Sprintf("%d::%d::%d", rbe.numevent, rbe.realzPos, rbe.blockPos)
 	hasNext := true
 
