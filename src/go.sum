@@ -149,6 +149,8 @@ github.com/usace/cloudcompute v0.0.0-20250820141715-764246cf3331 h1:kIhGtAHa7bx6
 github.com/usace/cloudcompute v0.0.0-20250820141715-764246cf3331/go.mod h1:NMj8QDS+dnJloftOxVA6w9S9sBzb2PWa4g5fTAMHYsk=
 github.com/usace/cloudcompute v0.0.0-20250911141650-c3a3397e3efe h1:AoUD849Nn20/IoahC7xG4ECeHLgzryU7CpG1y4tAf4w=
 github.com/usace/cloudcompute v0.0.0-20250911141650-c3a3397e3efe/go.mod h1:NMj8QDS+dnJloftOxVA6w9S9sBzb2PWa4g5fTAMHYsk=
+github.com/usace/cloudcompute v0.0.0-20250912165019-fa2812c5b878 h1:UBUNSjahYsYwhQjYQ+QHKJQrxuw72+V2O9m5gWhUscM=
+github.com/usace/cloudcompute v0.0.0-20250912165019-fa2812c5b878/go.mod h1:NMj8QDS+dnJloftOxVA6w9S9sBzb2PWa4g5fTAMHYsk=
 github.com/usace/filesapi v0.0.0-20250320132414-61c781325b9a h1:VEbsvUAkfZuZbA32GfKG5ZFh+OFd1wD6hahoO/fixaQ=
 github.com/usace/filesapi v0.0.0-20250320132414-61c781325b9a/go.mod h1:WugbEcTmSG0hzM44yaY67GCdhITD2Wx6zQI3rMmdSt8=
 github.com/wk8/go-ordered-map/v2 v2.1.8 h1:5h/BUHu93oj4gIdvHHHGsScSTMijfx5PeYkE/fJgbpc=

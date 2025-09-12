@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/invopop/jsonschema v0.13.0
 	github.com/spf13/cobra v1.9.1
-	github.com/usace/cloudcompute v0.0.0-20250911141650-c3a3397e3efe
+	github.com/usace/cloudcompute v0.0.0-20250912165019-fa2812c5b878
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 )
 
