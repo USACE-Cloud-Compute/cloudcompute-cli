@@ -198,7 +198,17 @@ func buildEventGenerator(computeManifests []ComputeManifest, config *CmdComputeC
 				if start < 0 || end < 0 {
 					return nil, fmt.Errorf("invalid Array Event generator start or end")
 				}
-				return NewArrayEventGenerator(event, start, end)
+
+				var pelmap []map[string]string
+				var err error
+				if pel, pelok := config.Generator["perEventLoop"]; pelok {
+					pelData := pel.([]any)
+					pelmap, err = utils.PelSliceToMap(pelData)
+					if err != nil {
+						return nil, err
+					}
+				}
+				return NewArrayEventGenerator(event, pelmap, start, end)
 
 			case streamGenType:
 				if filepath, ok := config.Generator["file"]; ok {
