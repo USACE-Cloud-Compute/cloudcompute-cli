@@ -183,6 +183,18 @@ func buildEventGenerator(computeManifests []ComputeManifest, config *CmdComputeC
 			Manifests:       computeManifests,
 		}
 
+		//process per event loop structures first
+		var pelmap []map[string]string
+		var err error
+		if pel, pelok := config.Generator["perEventLoop"]; pelok {
+			pelData := pel.([]any)
+			pelmap, err = utils.PelSliceToMap(pelData)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		//create the event generator from the config
 		if genType, ok := config.Generator["type"]; ok {
 			switch genType {
 			case arrayGenType:
@@ -194,20 +206,10 @@ func buildEventGenerator(computeManifests []ComputeManifest, config *CmdComputeC
 				if en, enok := config.Generator["end"]; enok {
 					end = int64(en.(float64))
 				}
-
 				if start < 0 || end < 0 {
 					return nil, fmt.Errorf("invalid Array Event generator start or end")
 				}
 
-				var pelmap []map[string]string
-				var err error
-				if pel, pelok := config.Generator["perEventLoop"]; pelok {
-					pelData := pel.([]any)
-					pelmap, err = utils.PelSliceToMap(pelData)
-					if err != nil {
-						return nil, err
-					}
-				}
 				return NewArrayEventGenerator(event, pelmap, start, end)
 
 			case streamGenType:
@@ -215,7 +217,7 @@ func buildEventGenerator(computeManifests []ComputeManifest, config *CmdComputeC
 					if delimiter, ok := config.Generator["delimiter"]; ok {
 						file, err := os.Open(filepath.(string))
 						if err == nil {
-							return NewStreamingEventGeneratorForReader(event, file, delimiter.(string))
+							return NewStreamingEventGeneratorForReader(event, pelmap, file, delimiter.(string))
 						}
 					}
 				}
