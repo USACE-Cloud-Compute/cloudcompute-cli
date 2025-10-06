@@ -33,6 +33,10 @@ var (
 	//pluginManifest string //used for register as an alternative to reading manifests from the DAG in the compute file
 )
 
+var version string
+var commit string
+var date string
+
 // commands
 var (
 	runCmd = &cobra.Command{
@@ -126,7 +130,7 @@ var (
 				//try and read a compute manifest file
 				manifest, err := utils.ReadJson[ComputeManifest](schemaGen)
 				if err != nil {
-					return fmt.Errorf("error reading manifest %s: %s\n", schemaGen, err)
+					return fmt.Errorf("error reading manifest %s: %s", schemaGen, err)
 				}
 				reflector := jsonschema.Reflector{}
 				val := deriveSchemaFromValue(&manifest, &reflector)
@@ -188,6 +192,17 @@ var (
 		},
 	}
 
+	versionCmd = &cobra.Command{
+		Use:   "version",
+		Short: "prints the manifestor version number",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Printf("Manifestor Version: %s\n", version)
+			fmt.Printf("Build: %s\n", commit)
+			fmt.Printf("Date: %s\n", date)
+			return nil
+		},
+	}
+
 	rootCmd = &cobra.Command{
 		Use:   "manifestor",
 		Short: "Manifestor CLI to run, register, terminate, and fetch logs for cloud compute.",
@@ -222,6 +237,7 @@ func main() {
 	rootCmd.AddCommand(terminateCmd)
 	rootCmd.AddCommand(logCmd)
 	rootCmd.AddCommand(exportSchemaCmd)
+	rootCmd.AddCommand(versionCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, "unable to run manifestor:", err)

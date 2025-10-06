@@ -130,6 +130,9 @@ For any issues or further questions, please refer to the GitHub repository or co
 ```bash
 >> cd src
 >> go build -o manifestor ./cmd
+>> go build -ldflags="-X 'main.version=v1.0.0'" -o manifestor ./cmd
+>> go build -ldflags "-X main.version=v0.9.0 -X main.commit=$(git describe --tags --always --long) -X main.date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" -o manifestor ./cmd
+>> go build -ldflags "-X main.version=v0.9.0 -X main.commit=$(git describe --tags --always --long) -X main.date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" -o manifestor ./cmd
 ```
 TODO
  - return new registered name from provider

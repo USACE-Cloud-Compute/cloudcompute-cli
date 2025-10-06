@@ -152,6 +152,7 @@ func (c *CmdCompute) Run() {
 	}
 
 	computeID := uuid.New()
+	fmt.Printf("Compute Identifier: %s\n", computeID.String())
 
 	ccCompute := CloudCompute{
 		Name:            "AGGREGATOR_TEST",
