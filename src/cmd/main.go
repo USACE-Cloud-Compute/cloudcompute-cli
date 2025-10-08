@@ -247,7 +247,9 @@ func main() {
 
 func initCompute() (*CmdCompute, error) {
 	if computeFile == "" {
-		return nil, fmt.Errorf("compute file not provided")
+		//return nil, fmt.Errorf("compute file not provided")
+		log.Println("compute file not provided.  Using default compute.json")
+		computeFile = "compute.json"
 	}
 
 	computefiledir := path.Dir(computeFile)
