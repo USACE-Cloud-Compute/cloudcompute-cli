@@ -14,6 +14,10 @@ import (
 	"github.com/usace/cloudcompute"
 )
 
+/*
+NOT IMPLEMENTED!!!!!!
+*/
+
 type ScriptEventGenerator struct {
 	vm     *goja.Runtime
 	script string
