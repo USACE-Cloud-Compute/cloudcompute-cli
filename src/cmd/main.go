@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/invopop/jsonschema"
@@ -192,6 +193,39 @@ var (
 		},
 	}
 
+	statusCmd = &cobra.Command{
+		Use:   "status [level] [val]",
+		Short: "status summaries",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			compute, err := initCompute()
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error getting status value(s):", err)
+				return err
+			}
+			level := args[0]
+			levelId := args[1]
+			compute.provider.Status(compute.computeQueue, JobsSummaryQuery{
+				QueryLevel: level,
+				QueryValue: JobNameParts{
+					Compute: levelId,
+				},
+				JobSummaryFunction: func(summaries []JobSummary) {
+					for _, summary := range summaries {
+						startedAt := toTime(summary.StartedAt)
+						stoppedAt := toTime(summary.StoppedAt)
+						var statusDetail string = "NA"
+						if summary.StatusDetail != nil {
+							statusDetail = *summary.StatusDetail
+						}
+
+						fmt.Printf("\"%s\", \"%s\", \"%s\", \"%s\", \"%s\"\n", summary.JobId, startedAt, stoppedAt, summary.Status, statusDetail)
+					}
+				},
+			})
+			return nil
+		},
+	}
+
 	versionCmd = &cobra.Command{
 		Use:   "version",
 		Short: "prints the manifestor version number",
@@ -215,6 +249,14 @@ var (
 	}
 )
 
+func toTime(providerTime *int64) string {
+	if providerTime == nil {
+		return "NA"
+	}
+	t := time.UnixMilli(*providerTime)
+	return t.String()
+}
+
 func initializeCommands() {
 	//root
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
@@ -237,6 +279,7 @@ func main() {
 	rootCmd.AddCommand(terminateCmd)
 	rootCmd.AddCommand(logCmd)
 	rootCmd.AddCommand(exportSchemaCmd)
+	rootCmd.AddCommand(statusCmd)
 	rootCmd.AddCommand(versionCmd)
 
 	if err := rootCmd.Execute(); err != nil {
