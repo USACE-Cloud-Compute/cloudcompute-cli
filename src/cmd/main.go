@@ -218,7 +218,7 @@ var (
 							statusDetail = *summary.StatusDetail
 						}
 
-						fmt.Printf("\"%s\", \"%s\", \"%s\", \"%s\", \"%s\"\n", summary.JobId, startedAt, stoppedAt, summary.Status, statusDetail)
+						fmt.Printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n", summary.JobId, startedAt, stoppedAt, summary.Status, statusDetail)
 					}
 				},
 			})
