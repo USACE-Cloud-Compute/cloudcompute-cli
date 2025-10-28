@@ -13,7 +13,7 @@ import (
 	"github.com/dop251/goja_nodejs/buffer"
 	"github.com/dop251/goja_nodejs/console"
 	"github.com/dop251/goja_nodejs/require"
-	"github.com/usace/cloudcompute"
+	"github.com/usace-cloud-compute/cloudcompute"
 )
 
 const (

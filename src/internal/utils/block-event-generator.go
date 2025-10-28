@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/usace/cloudcompute"
+	"github.com/usace-cloud-compute/cloudcompute"
 )
 
 type RealzBlockEventGenerator struct {

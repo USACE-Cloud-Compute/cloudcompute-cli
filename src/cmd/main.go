@@ -13,8 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/invopop/jsonschema"
 	"github.com/spf13/cobra"
-	"github.com/usace/cloudcompute"
-	. "github.com/usace/cloudcompute"
+	"github.com/usace-cloud-compute/cloudcompute"
+	. "github.com/usace-cloud-compute/cloudcompute"
 	"github.com/usace/manifestor/internal/utils"
 )
 

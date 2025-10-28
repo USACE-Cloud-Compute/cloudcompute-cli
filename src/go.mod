@@ -4,7 +4,7 @@ go 1.24.0
 
 toolchain go1.24.6
 
-replace github.com/usace/cloudcompute => /Users/rdcrlrsg/Projects/programming/hec/cloudcompute
+//replace github.com/usace/cloudcompute => /Users/rdcrlrsg/Projects/programming/hec/cloudcompute
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.3
@@ -13,8 +13,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/invopop/jsonschema v0.13.0
 	github.com/spf13/cobra v1.9.1
-	github.com/usace/cc-go-sdk v0.0.0-20250708142539-ab413ab1d306
-	github.com/usace/cloudcompute v0.0.0-20250923181852-502d0a851b40
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 )
 
@@ -66,6 +64,9 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
+	github.com/usace-cloud-compute/cc-go-sdk v0.0.0-20251028200929-467ec9a1f90f // indirect
+	github.com/usace-cloud-compute/cloudcompute v0.0.0-20251028201236-b3931b5cf3e4 // indirect
+	github.com/usace-cloud-compute/filesapi v0.0.0-20251028183744-20a294ce41f9 // indirect
 	github.com/usace/filesapi v0.0.0-20250320132414-61c781325b9a // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.60.0 // indirect

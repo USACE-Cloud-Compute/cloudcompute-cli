@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/usace/cc-go-sdk"
-	"github.com/usace/cloudcompute"
+	"github.com/usace-cloud-compute/cc-go-sdk"
+	"github.com/usace-cloud-compute/cloudcompute"
 )
 
 func TestBlockEventGenerator(t *testing.T) {

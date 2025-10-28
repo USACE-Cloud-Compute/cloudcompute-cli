@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	. "github.com/usace/cloudcompute"
-	. "github.com/usace/cloudcompute/providers/awsbatch"
-	. "github.com/usace/cloudcompute/providers/docker"
+	. "github.com/usace-cloud-compute/cloudcompute"
+	. "github.com/usace-cloud-compute/cloudcompute/providers/awsbatch"
+	. "github.com/usace-cloud-compute/cloudcompute/providers/docker"
 	"github.com/usace/manifestor/internal/utils"
 )
 
