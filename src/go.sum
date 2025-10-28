@@ -149,7 +149,6 @@ github.com/usace-cloud-compute/cloudcompute v0.0.0-20251028201236-b3931b5cf3e4 h
 github.com/usace-cloud-compute/cloudcompute v0.0.0-20251028201236-b3931b5cf3e4/go.mod h1:fCRw0/KUt49Yi8oiR9Y4cviPQRAI8tK0MG6dkmHcym4=
 github.com/usace-cloud-compute/filesapi v0.0.0-20251028183744-20a294ce41f9 h1:Xq+vXV+1T0MQb32c6CsYwn56XDbWSIO3CM6IYv6Im9A=
 github.com/usace-cloud-compute/filesapi v0.0.0-20251028183744-20a294ce41f9/go.mod h1:6iMo7JYrqbf0dfSVGqrAJfoVhi2hKJysD5o8mXi0XhI=
-github.com/usace/filesapi v0.0.0-20250320132414-61c781325b9a/go.mod h1:WugbEcTmSG0hzM44yaY67GCdhITD2Wx6zQI3rMmdSt8=
 github.com/wk8/go-ordered-map/v2 v2.1.8 h1:5h/BUHu93oj4gIdvHHHGsScSTMijfx5PeYkE/fJgbpc=
 github.com/wk8/go-ordered-map/v2 v2.1.8/go.mod h1:5nJHM5DyteebpVlHnWMV0rPz6Zp7+xBAnxjb1X5vnTw=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
