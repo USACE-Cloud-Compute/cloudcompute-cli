@@ -70,7 +70,9 @@ var (
 			if compute.providerType == DOCKER_PROVIDER {
 				compute.Register()
 			}
+
 			compute.Run()
+
 			if compute.providerType == DOCKER_PROVIDER {
 				compute.WaitForJobs()
 			}
@@ -296,6 +298,10 @@ func initCompute() (*CmdCompute, error) {
 	}
 
 	computefiledir := path.Dir(computeFile)
+	err := os.Chdir(computefiledir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set working directory to %s: %s", computefiledir, err)
+	}
 	computeConfig, err := utils.ReadJson[CmdComputeConfig](computeFile)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Unable to read the compute file:")

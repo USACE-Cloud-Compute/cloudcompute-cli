@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/usace/cloudcompute/compute-manifest",
+  "$ref": "#/$defs/ComputeManifest",
+  "$defs": {
+    "Action": {
+      "properties": {
+        "attributes": {
+          "$ref": "#/$defs/PayloadAttributes"
+        },
+        "stores": {
+          "items": {
+            "$ref": "#/$defs/DataStore"
+          },
+          "type": "array"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/DataSource"
+          },
+          "type": "array"
+        },
+        "outputs": {
+          "items": {
+            "$ref": "#/$defs/DataSource"
+          },
+          "type": "array"
+        },
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "stores",
+        "inputs",
+        "outputs"
+      ]
+    },
+    "ComputeManifest": {
+      "properties": {
+        "manifest_name": {
+          "type": "string",
+          "title": "Manifest Name",
+          "description": "The name for the compute manifest"
+        },
+        "command": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "title": "Command Override",
+          "description": "An optional command override for the plugin"
+        },
+        "stores": {
+          "items": {
+            "$ref": "#/$defs/DataStore"
+          },
+          "type": "array",
+          "title": "Stores"
+        },
+        "inputs": {
+          "$ref": "#/$defs/PluginInputs",
+          "title": "Inputs"
+        },
+        "outputs": {
+          "items": {
+            "$ref": "#/$defs/DataSource"
+          },
+          "type": "array",
+          "title": "Outputs"
+        },
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/Action"
+          },
+          "type": "array",
+          "title": "Actions"
+        },
+        "plugin_definition": {
+          "type": "string",
+          "title": "Plugin Definition"
+        },
+        "tags": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object",
+          "title": "Tags"
+        },
+        "retry_attempts": {
+          "type": "integer",
+          "title": "Retry Attempts Override"
+        },
+        "job_timeout": {
+          "type": "integer",
+          "title": "Job Timeout Override"
+        },
+        "resource_requirements": {
+          "items": {
+            "$ref": "#/$defs/ResourceRequirement"
+          },
+          "type": "array",
+          "title": "Resource Requirement Overrides"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "DataSource": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "paths": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "data_paths": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "store_name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "DataStore": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "store_type": {
+          "type": "string"
+        },
+        "profile": {
+          "type": "string"
+        },
+        "params": {
+          "$ref": "#/$defs/PayloadAttributes"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "KeyValuePair": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name",
+        "value"
+      ]
+    },
+    "KeyValuePairs": {
+      "items": {
+        "$ref": "#/$defs/KeyValuePair"
+      },
+      "type": "array"
+    },
+    "PayloadAttributes": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "PluginInputs": {
+      "properties": {
+        "environment": {
+          "$ref": "#/$defs/KeyValuePairs"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "data_sources": {
+          "items": {
+            "$ref": "#/$defs/DataSource"
+          },
+          "type": "array"
+        },
+        "payload_attributes": {
+          "$ref": "#/$defs/PayloadAttributes"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ResourceRequirement": {
+      "properties": {
+        "resource_type": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "resource_type",
+        "value"
+      ]
+    },
+    "UUID": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array",
+      "maxItems": 16,
+      "minItems": 16
+    }
+  }
+}

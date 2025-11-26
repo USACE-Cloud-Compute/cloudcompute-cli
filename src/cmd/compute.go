@@ -19,6 +19,7 @@ type TerminationLevel string
 
 const (
 	arrayGenType         string = "array"
+	arrayGenType2        string = "array2"
 	streamGenType        string = "stream"
 	realzBlockGenType    string = "realzblock"
 	concurrentSubmission int    = 10
@@ -219,6 +220,9 @@ func buildEventGenerator(computeManifests []ComputeManifest, config *CmdComputeC
 						file, err := os.Open(filepath.(string))
 						if err == nil {
 							return NewStreamingEventGeneratorForReader(event, pelmap, file, delimiter.(string))
+						} else {
+							wd, _ := os.Getwd()
+							return nil, fmt.Errorf("failed to open stream generator file %s from working directory %s: %s", filepath, wd, err)
 						}
 					}
 				}
@@ -245,6 +249,36 @@ func buildEventGenerator(computeManifests []ComputeManifest, config *CmdComputeC
 					return utils.NewRealzBlockEventGenerator(event, startRealz, endRealz, startBlock, endBlock)
 				}
 				return nil, fmt.Errorf("realz block event generator")
+
+			case arrayGenType2:
+				var start int64 = -1
+				var end int64 = -1
+				if st, stok := config.Generator["start"]; stok {
+					start = int64(st.(float64))
+				}
+				if en, enok := config.Generator["end"]; enok {
+					end = int64(en.(float64))
+				}
+				if start < 0 || end < 0 {
+					return nil, fmt.Errorf("invalid Array Event generator start or end")
+				}
+
+				var ae map[string]any
+				var aeok bool
+				if addEnv, addok := config.Generator["addEnv"]; addok {
+					ae, aeok = addEnv.(map[string]any)
+					if !aeok {
+						return nil, fmt.Errorf("invalid additional env vars.  Must be a map<string,string>")
+					}
+				}
+
+				return utils.NewArrayEventGenerator2(utils.ArrayEventGeneratorInput{
+					Event:                  event,
+					PerEventLoopData:       pelmap,
+					StartIndex:             start,
+					EndIndex:               end,
+					AdditionalEnvResources: ae,
+				})
 			}
 		}
 	}
@@ -295,8 +329,11 @@ func (c *CmdCompute) WaitForJobs() {
 func awsCompute(compute *CmdComputeConfig) (ComputeProvider, error) {
 	er := compute.Provider["execution-role"].(string)
 	region := compute.Provider["region"].(string)
-	profile := compute.Provider["profile"].(string)
-
+	profile := ""
+	if pprofile, ok := compute.Provider["profile"].(string); ok {
+		profile = pprofile
+	}
+	//profile := compute.Provider["profile"].(string)
 	cpi := NewAwsBatchProviderInput(er, region, profile)
 	return NewAwsBatchProvider(cpi)
 }
