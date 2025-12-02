@@ -20,7 +20,7 @@ jobs:
 
       - name: Build
         run: |
-          env GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o cccli-${{ matrix.os }}-${{ matrix.arch }} ./cmd
+          cd src && env GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o cccli-${{ matrix.os }}-${{ matrix.arch }} ./cmd
 
       - name: Rename Windows Executables
         if: matrix.os == 'windows'
