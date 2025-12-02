@@ -29,7 +29,7 @@ jobs:
 
       - name: Build
         run: |
-          cd src && env GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -ldflags "-X 'main.version=${{ steps.version.outputs.version }} -X main.commit=$(git describe --tags --always --long) -X main.date=$(date -u +%Y-%m-%dT%H:%M:%SZ)'" -o dist/cccli-${{ matrix.os }}-${{ matrix.arch }} ./cmd
+          cd src && env GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -ldflags "-X 'main.version=${{ steps.version.outputs.version }}' -X 'main.commit=$(git describe --tags --always --long)' -X 'main.date=$(date -u +%Y-%m-%dT%H:%M:%SZ)'" -o dist/cccli-${{ matrix.os }}-${{ matrix.arch }} ./cmd
 
       - name: Rename Windows Executables
         if: matrix.os == 'windows'
