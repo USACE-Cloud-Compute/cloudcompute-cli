@@ -18,9 +18,18 @@ jobs:
         with:
           go-version: "1.25"
 
+      - name: Get tag version
+        id: version
+        run: |
+          # Extract the version number by removing the 'v' prefix
+          ref="${GITHUB_REF_NAME}"
+          v="${ref#v}"
+          echo "Extracted version: $v"
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
       - name: Build
         run: |
-          cd src && env GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o dist/cccli-${{ matrix.os }}-${{ matrix.arch }} ./cmd
+          cd src && env GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -ldflags "-X 'main.version=${{ steps.version.outputs.version }} -X main.commit=$(git describe --tags --always --long) -X main.date=$(date -u +%Y-%m-%dT%H:%M:%SZ)'" -o dist/cccli-${{ matrix.os }}-${{ matrix.arch }} ./cmd
 
       - name: Rename Windows Executables
         if: matrix.os == 'windows'
