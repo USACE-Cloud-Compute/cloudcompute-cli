@@ -1,4 +1,4 @@
-module github.com/usace/manifestor
+module github.com/usace-cloud-compute/cloudcompute-cli
 
 go 1.24.0
 

@@ -10,9 +10,9 @@ import (
 
 	"github.com/google/uuid"
 	. "github.com/usace-cloud-compute/cloudcompute"
+	"github.com/usace-cloud-compute/cloudcompute-cli/internal/utils"
 	. "github.com/usace-cloud-compute/cloudcompute/providers/awsbatch"
 	. "github.com/usace-cloud-compute/cloudcompute/providers/docker"
-	"github.com/usace/manifestor/internal/utils"
 )
 
 type TerminationLevel string

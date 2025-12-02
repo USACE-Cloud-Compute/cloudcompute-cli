@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/usace-cloud-compute/cloudcompute"
 	. "github.com/usace-cloud-compute/cloudcompute"
-	"github.com/usace/manifestor/internal/utils"
+	"github.com/usace-cloud-compute/cloudcompute-cli/internal/utils"
 )
 
 const (
@@ -230,9 +230,9 @@ var (
 
 	versionCmd = &cobra.Command{
 		Use:   "version",
-		Short: "prints the manifestor version number",
+		Short: "prints the cli version number",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Printf("Manifestor Version: %s\n", version)
+			fmt.Printf("CLI Version: %s\n", version)
 			fmt.Printf("Build: %s\n", commit)
 			fmt.Printf("Date: %s\n", date)
 			return nil
@@ -240,8 +240,8 @@ var (
 	}
 
 	rootCmd = &cobra.Command{
-		Use:   "manifestor",
-		Short: "Manifestor CLI to run, register, terminate, and fetch logs for cloud compute.",
+		Use:   "cccli",
+		Short: "CloudCompute CLI to run, register, terminate, and fetch logs for cloud compute.",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			if envFile != "" {
 				return setEnv(envFile)
@@ -285,7 +285,7 @@ func main() {
 	rootCmd.AddCommand(versionCmd)
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, "unable to run manifestor:", err)
+		fmt.Fprintln(os.Stderr, "unable to run cli:", err)
 		os.Exit(1)
 	}
 }
