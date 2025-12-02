@@ -4,7 +4,7 @@ go 1.24.0
 
 toolchain go1.24.6
 
-replace github.com/usace-cloud-compute/cloudcompute => /Users/rdcrlrsg/Projects/programming/hec/cloudcompute
+//replace github.com/usace-cloud-compute/cloudcompute => /Users/rdcrlrsg/Projects/programming/hec/cloudcompute
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.3
