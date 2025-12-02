@@ -18,11 +18,6 @@ jobs:
         with:
           go-version: "1.25"
 
-      - name: Install Deps
-        run: |
-          cd src && 
-          go get .
-
       - name: Build
         run: |
           env GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o cccli-${{ matrix.os }}-${{ matrix.arch }}
