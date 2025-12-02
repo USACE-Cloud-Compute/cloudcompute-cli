@@ -20,15 +20,16 @@ jobs:
 
       - name: Build
         run: |
-          cd src && env GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o cccli-${{ matrix.os }}-${{ matrix.arch }} ./cmd
+          cd src && env GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o dist/cccli-${{ matrix.os }}-${{ matrix.arch }} ./cmd
 
       - name: Rename Windows Executables
         if: matrix.os == 'windows'
         run: |
-          mv mycli-windows-${{ matrix.arch }} mycli-windows-${{ matrix.arch }}.exe
+          mv dist/cccli-windows-${{ matrix.arch }} dist/cccli-windows-${{ matrix.arch }}.exe
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: cccli-binaries-${{ matrix.os }}-${{ matrix.arch }}
-          path: cccli-${{ matrix.os }}-${{ matrix.arch }}*
+          files: dist/*
