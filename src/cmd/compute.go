@@ -346,7 +346,8 @@ func dockerCompute(compute *CmdComputeConfig) (ComputeProvider, error) {
 		}
 	}
 	dockerComputeProviderConfig := DockerComputeProviderConfig{
-		Concurrency: concurrency,
+		Concurrency:               concurrency,
+		DockerPullProgressFactory: &utils.CliDockerPullProgressFactory{},
 	}
 
 	if compute.SecretsManager != nil {
