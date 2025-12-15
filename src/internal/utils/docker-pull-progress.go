@@ -47,8 +47,7 @@ func (dpp *CliDockerPullProgress) Update(msg cloudcompute.DockerEvent) {
 			msg.ProgressDetail.Total,
 			mpb.BarStyle().Lbound("[").Filler("=").Tip(">").Padding("-").Rbound("]"),
 			mpb.PrependDecorators(
-				decor.Name(msg.ID, decor.WC{W: 15, C: decor.DindentRight}),
-				decor.Name(msg.Status, decor.WC{W: 14, C: decor.DindentRight}),
+				decor.Name("Layer: "+msg.ID, decor.WC{W: 22, C: decor.DindentRight}),
 				decor.CountersKibiByte(
 					"%8.2f / %8.2f",
 					decor.WC{W: 19, C: decor.DindentRight}),
