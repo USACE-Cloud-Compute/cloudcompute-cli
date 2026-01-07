@@ -157,6 +157,8 @@ github.com/usace-cloud-compute/cc-go-sdk v0.0.0-20251118163833-620acc79f197 h1:o
 github.com/usace-cloud-compute/cc-go-sdk v0.0.0-20251118163833-620acc79f197/go.mod h1:HZsGTrNUUdjfqqJJaLpSBEKoIDmu/vnye2KK/AwchDo=
 github.com/usace-cloud-compute/cloudcompute v0.0.0-20251118170240-bfca1b906927 h1:I9jR77PhNXY36NGadI+Et+rKpsByghSIhwiku17oCQQ=
 github.com/usace-cloud-compute/cloudcompute v0.0.0-20251118170240-bfca1b906927/go.mod h1:sZ5m1Glw1RHHUUMQ+/c/Yp1LfMM7+YwYKJcLth7IPLg=
+github.com/usace-cloud-compute/cloudcompute v0.0.0-20251219142337-00760b4e1144 h1:WyYf4URhkIjWts8+w+j4HhEaqIcFTCa77S+2U/7BKxg=
+github.com/usace-cloud-compute/cloudcompute v0.0.0-20251219142337-00760b4e1144/go.mod h1:go/DgG/0EtvCIn8eAbNndLmBhySz0cwTjr2EL3Jxsgo=
 github.com/usace-cloud-compute/filesapi v0.0.0-20251107191432-8084e0da4b5c h1:1Srw2WpT9tcEIUY853oeojXJjPH8iTYFGLXPaIrUe+I=
 github.com/usace-cloud-compute/filesapi v0.0.0-20251107191432-8084e0da4b5c/go.mod h1:6iMo7JYrqbf0dfSVGqrAJfoVhi2hKJysD5o8mXi0XhI=
 github.com/vbauerster/mpb/v8 v8.11.2 h1:OqLoHznUVU7SKS/WV+1dB5/hm20YLheYupiHhL5+M1Y=

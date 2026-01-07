@@ -4,7 +4,7 @@ go 1.24.0
 
 toolchain go1.24.6
 
-replace github.com/usace-cloud-compute/cloudcompute => /Users/rdcrlrsg/Projects/programming/hec/cloudcompute
+//replace github.com/usace-cloud-compute/cloudcompute => /Users/rdcrlrsg/Projects/programming/hec/cloudcompute
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.3
@@ -14,7 +14,7 @@ require (
 	github.com/invopop/jsonschema v0.13.0
 	github.com/spf13/cobra v1.9.1
 	github.com/usace-cloud-compute/cc-go-sdk v0.0.0-20251118163833-620acc79f197
-	github.com/usace-cloud-compute/cloudcompute v0.0.0-20251118170240-bfca1b906927
+	github.com/usace-cloud-compute/cloudcompute v0.0.0-20251219142337-00760b4e1144
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 )
 
