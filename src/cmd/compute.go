@@ -13,6 +13,8 @@ import (
 	"github.com/usace-cloud-compute/cloudcompute-cli/internal/utils"
 	. "github.com/usace-cloud-compute/cloudcompute/providers/awsbatch"
 	. "github.com/usace-cloud-compute/cloudcompute/providers/docker"
+	. "github.com/usace-cloud-compute/cloudcompute/providers/k8sargo"
+	. "github.com/usace-cloud-compute/cloudcompute/providers/k8ssimple"
 )
 
 type TerminationLevel string
@@ -38,7 +40,11 @@ type CmdCompute struct {
 }
 
 func (c *CmdCompute) GetLog(jobId string, token *string) (JobLogOutput, error) {
-	output, err := c.provider.JobLog(jobId, token)
+	//output, err := c.provider.JobLog(jobId, token)
+	output, err := c.provider.JobLog(JobLogInput{
+		VendorJobId:       jobId,
+		ContinuationToken: token,
+	})
 	if err != nil {
 		return JobLogOutput{}, err
 	}
@@ -156,7 +162,7 @@ func (c *CmdCompute) Run() {
 	fmt.Printf("Compute Identifier: %s\n", computeID.String())
 
 	ccCompute := CloudCompute{
-		Name:            "AGGREGATOR_TEST",
+		Name:            "CCCLI-RUN",
 		ID:              computeID,
 		JobQueue:        c.computeQueue,
 		Events:          eventGenerator,
@@ -336,6 +342,26 @@ func awsCompute(compute *CmdComputeConfig) (ComputeProvider, error) {
 	//profile := compute.Provider["profile"].(string)
 	cpi := NewAwsBatchProviderInput(er, region, profile)
 	return NewAwsBatchProvider(cpi)
+}
+
+func k8sCompute(compute *CmdComputeConfig) (ComputeProvider, error) {
+	ns := compute.Provider["namespace"].(string)
+	k8sconfig := compute.Provider["kubeconfig"].(string)
+	config := KubernetesComputeProviderConfig{
+		Namespace:  ns,
+		Kubeconfig: k8sconfig,
+	}
+	return NewKubernetesComputeProvider(config)
+}
+
+func k8sArgoCompute(compute *CmdComputeConfig) (ComputeProvider, error) {
+	ns := compute.Provider["namespace"].(string)
+	argoservice := compute.Provider["service-url"].(string)
+	config := ArgoWorkflowComputeProviderConfig{
+		Namespace:  ns,
+		ServiceUrl: argoservice,
+	}
+	return NewArgoWorkflowComputeProvider(config)
 }
 
 func dockerCompute(compute *CmdComputeConfig) (ComputeProvider, error) {

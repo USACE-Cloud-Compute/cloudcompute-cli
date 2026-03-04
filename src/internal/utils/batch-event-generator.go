@@ -104,10 +104,11 @@ func (seg *StreamingBatchEventGenerator) NextEvent() (Event, bool, error) {
 	} else {
 		var additionalEnvVars map[string]string
 		incrementEvent := true
-
+		pos := 0 //per event loop position
 		if seg.perEventLooper != nil {
-			additionalEnvVars, incrementEvent = seg.perEventLooper.Next()
+			additionalEnvVars, incrementEvent, pos = seg.perEventLooper.Next()
 			event.AdditionalEventEnvVars = MapToKeyValuePairs(additionalEnvVars)
+			event.PerEventLoopNum = pos
 		}
 		event.EventIdentifier = seg.eventId
 

@@ -99,8 +99,10 @@ func (aeg *ArrayEventGenerator2) NextEvent() (Event, bool, error) {
 	event := aeg.event
 	var additionalEnvVars map[string]string
 	incrementEvent := true
+	pos := 0 //per event loop position
 	if aeg.pel != nil {
-		additionalEnvVars, incrementEvent = aeg.pel.Next()
+		additionalEnvVars, incrementEvent, pos = aeg.pel.Next()
+		event.PerEventLoopNum = pos
 	}
 
 	//add any additional vars from files

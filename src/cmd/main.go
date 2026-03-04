@@ -21,6 +21,8 @@ import (
 const (
 	DOCKER_PROVIDER          = "docker"
 	AWSBATCH_PROVIDER        = "awsbatch"
+	K8S_PROVIDER             = "k8s"
+	K8SARGO_PROVIDER         = "k8sargo"
 	SECRET_MANAGER_IN_MEMORY = "in-memory"
 	SECRET_MANAGER_ENV       = "env"
 )
@@ -320,11 +322,17 @@ func initCompute() (*CmdCompute, error) {
 	var computeProvider ComputeProvider
 	switch providerType {
 	case DOCKER_PROVIDER:
-		fmt.Println("Using the docker compute provider")
+		log.Println("Using the docker compute provider")
 		computeProvider, err = dockerCompute(computeConfig)
 	case AWSBATCH_PROVIDER:
-		fmt.Println("Using the AWS Batch compute provider")
+		log.Println("Using the AWS Batch compute provider")
 		computeProvider, err = awsCompute(computeConfig)
+	case K8S_PROVIDER:
+		log.Println("Using the K8S compute provider")
+		computeProvider, err = k8sCompute(computeConfig)
+	case K8SARGO_PROVIDER:
+		log.Println("Using the K8S Argo compute provider")
+		computeProvider, err = k8sArgoCompute(computeConfig)
 	default:
 		log.Fatalf("Invalid compute provider: %s\n", providerType)
 	}
