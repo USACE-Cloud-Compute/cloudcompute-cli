@@ -1,143 +1,421 @@
-## Manifestor
+# Cloud Compute Command Line Interface (cccli)
 
-Manifestor is a command line tool for registering and running computations using specified providers.
-It supports Docker and AWS Batch as compute providers. 
+The Cloud Compute Command Line Interface (cccli) is a powerful tool for registering and running cloud computations across multiple compute providers. It supports Docker, AWS Batch, Kubernetes, and Kubernetes Argo Workflows as compute providers.
 
-Manifestor jobs are configured as a set of json files. At a minumum, you will need the following:
+## Table of Contents
 
-  - Compute File:  the compute file defines the job that ill be run by the manifestor.  It has the following attributes:
-    - Name: the name of the job
-    - Provider: the type of compute provider that will run the job
-    - Plugins: the plugin manifests that are going to be run
-    - Event: the list of compute manifest files that will be run in an event.
+- [Overview](#overview)
+- [Installation](#installation)
+- [Configuration](#configuration)
+  - [Compute File](#compute-file)
+  - [Plugin Manifest](#plugin-manifest)
+  - [Compute Manifest](#compute-manifest)
+  - [Environment File](#environment-file)
+- [Usage](#usage)
+  - [Commands](#commands)
+- [Event Generators](#event-generators)
+- [Quick Start Example](#quick-start-example)
+- [Building from Source](#building-from-source)
+- [License](#license)
 
-Refer to the 'data' folder for the hello-world example which runs a job using the local docker compute provider and executes a single event with two compute manifests that must be run in sequence.
+## Overview
 
-``` bash
->./manifestor --envFile=.env-local-hw run data/hello-world/compute.json
+cccli orchestrates cloud compute jobs through a flexible configuration system based on JSON files. Jobs are defined by three key components:
+
+- **Compute File**: Defines the job name, compute provider, plugins, and event structure
+- **Plugin Manifest**: Specifies the container image, resources, and execution details
+- **Compute Manifest**: Defines the specific commands and parameters for each job execution
+
+## Installation
+
+Download the latest release from the [GitHub repository](https://github.com/USACE-Cloud-Compute/cc-cli) or build from source (see [Building from Source](#building-from-source)).
+
+## Configuration
+
+### Compute File
+
+The compute file is the main configuration that defines your cloud compute job. Example:
+
+```json
+{
+    "name": "Hello World Test",
+    "provider": {
+        "type": "docker",
+        "concurrency": 1,
+        "queue": "docker-local"
+    },
+    "plugins": ["hello-world-plugin.json"],
+    "event": {
+        "compute-manifests": ["hello-world-manifest1.json", "hello-world-manifest2.json"]
+    }
+}
 ```
-An environment file is necessary to give the compute provider permissions to configure and copy/read payloads from a compute store.  A sample environemnt using a local instance of minio to emulate AWS S3 is:
 
-``` bash
-CC_AWS_ACCESS_KEY_ID=minioBucketIdKey
-CC_AWS_SECRET_ACCESS_KEY=minioBucketSecretKey
-CC_AWS_DEFAULT_REGION=us-east-1
-CC_AWS_S3_BUCKET=ccstore
-CC_AWS_ENDPOINT=http://localhost:9000
+**Supported Provider Types:**
+- `docker` - Local Docker provider (auto-registers plugins)
+- `awsbatch` - AWS Batch
+- `k8s` - Kubernetes
+- `k8sargo` - Kubernetes Argo Workflows
+
+### Plugin Manifest
+
+Defines the container image and compute resources:
+
+```json
+{
+    "name": "hello-world-plugin",
+    "image_and_tag": "ghcr.io/usace-cloud-compute/hello-world-plugin:latest",
+    "description": "Docker Hello World",
+    "command": ["/runme"],
+    "compute_environment": {
+        "vcpu": "1",
+        "memory": "256"
+    }
+}
 ```
 
-If you are running jobs that use Cloud Compute payloads, a minio bucket is neccesary to emulate the compute store.  To configure this bucket, run minio locally using the docker-compose.yml file in this repositories root directory:
+### Compute Manifest
 
-``` bash
->docker compose up
+Specifies the execution details for each job:
+
+```json
+{
+    "plugin_definition": "hello-world-plugin",
+    "command": ["sleep", "10"],
+    "depends-on": ["other-manifest.json"]
+}
 ```
-Once minio is running, open your browser and login to minio on `http://localhost:9001` with the username and password from the docker-compose.yml file.
 
-![image info](./docs/img/minio-login.png)
+The `depends-on` field allows you to specify dependencies between compute manifests within an event.
 
-Select `Buckets` from the `Administrator` left panel menu and click the `Create Bucket` button.
+### Environment File
 
-Create a bucket similar to this:
+Environment variables provide credentials and configuration for the compute provider:
 
-![image info](./docs/img/create-bucket.png)
-
-Select `Access Keys` from the `User` left panel menu and click the `Create access key` button.
-
-Name this key however you like and this will be the ID/Secret key used by your compute environment file.
-
-![image info](./docs/img/create-access-key.png)
-
-For this example, and access key id of `OBFLI6AWPWRmaFxOn4Zw` was created with a corresponding secret of `B5Mjn5FtekP6wwBGNecnVejgyG0c9jiaGAjshNui`
-
-Next select `Object Browser` from the `User` left panel menu, then select `compute-store` to view the objects in the store (which is currently empty).
-
-![image info](./docs/img/object-browser.png)
-
-Select the `Create new path` button to the right and create a path called `cc_store`.  This is a store used by Cloud Compute to manage payloads and other information that is transmitted to running jobs.
-
-![image info](./docs/img/create-cc-store.png)
-
-now create an environment file called `.env` with the keys and endpoints you just created:
-
-``` bash
-CC_AWS_ACCESS_KEY_ID=OBFLI6AWPWRmaFxOn4Zw
-CC_AWS_SECRET_ACCESS_KEY=B5Mjn5FtekP6wwBGNecnVejgyG0c9jiaGAjshNui
+```bash
+CC_AWS_ACCESS_KEY_ID=your_access_key
+CC_AWS_SECRET_ACCESS_KEY=your_secret_key
 CC_AWS_DEFAULT_REGION=us-east-1
 CC_AWS_S3_BUCKET=compute-store
 CC_AWS_ENDPOINT=http://localhost:9000
 ```
 
-At this point you should be able to run the hello world example by executing the following:
-``` bash
->./manifestor --envFile=.env --computeFile=data/hello-world/compute.json run 
+For AWS Batch, use standard AWS credentials. For local development with MinIO (S3-compatible storage), use the MinIO endpoint.
+
+## Usage
+
+Basic command structure:
+
+```bash
+cccli [global-flags] <command> [command-flags] [arguments]
 ```
 
-the manifestor command has the following syntax:
-> manifestor --envFile={path to env file} --computeFile={path to compute file} {command} {subcommands}
+### Global Flags
 
-there are four possible commands to execute:
- 1) **run**: the run command executes a compute job. syntax is:
-    >manifestor run {optional job store}
+- `-c, --computeFile` - Path to compute configuration file (default: `compute.json`)
+- `-e, --envFile` - Path to environment file for provider credentials
 
-    example:
-    ```bash
-    ./manifestor --envFile=.env-aws --computeFile=data/ras-sample/aws/compute.json run --jobStore=data/ras-sample/aws/jobs.csv
-    ```
-    This will run a compute and export the compute identifiers to a csv file **jobs.csv**  The output of the jobs file is comma separated values containing:
+### Commands
 
-    ![alt text](docs/img/job-store-csv.png)
+#### `run`
 
-    Note that the Compute, Event, and Job Identifiers are created and used by cloud compute.  The ComputeProviderJob is the identifier natively used by the compute provider.  The payload guild represents the folder in the cloud compute store that holds the jobs payload and the event identifier is the string identifier injected into the environment for each run.
+Execute a compute job defined in the compute file.
 
- 2) **register**: registers a plugin manifest with a compute environment.
-    >manifestor register 
+```bash
+cccli -c compute.json -e .env run [flags]
+```
 
-    example:
-    ```bash
-    ./manifestor --envFile=.env-aws --computeFile=data/ras-sample/aws/compute.json register
-    ```
+**Flags:**
+- `-j, --jobStore` - Path to CSV file for storing job identifiers
+- `-p, --eventPostProcessor` - Path to JavaScript file for post-processing events
 
- 3) **terminate**: terminates jobs in the compute provider.
-    >manifestor terminate {termination-level} {identifier} {termination-message}
-    
-    - termination-level is one of three categories to terminate jobs on: `COMPUTE|EVENT|JOB`.  This is combined with the identifier to delete a set of jobs.
-    - identifier is the GUID of the compute/event/job that will be used for jobs termination.
-    - termination message is the message that will be recorded by the compute probvider when jobs are terminated.
+**Example:**
 
-    example:
-    ```bash
-    ./manifestor --envFile=.env-aws --computeFile=data/ras-sample/aws/compute.json terminate COMPUTE 068ff6fe-d8d9-48af-b897-b937a7e14dae "more testing tools"
-    ```
- 4) **logs**: extract job logs from the compute provider.
-    >manifestor logs {compute provider job identifier}
-   
-    - compute provider job identifier is the native identifier of the compute provider created for the job
+```bash
+cccli -c data/hello-world/compute.json -e .env run --jobStore=jobs.csv
+```
 
-    example:
-    ```bash
-    ./manifestor --envFile=.env --computeFile=data/ras-sample/aws/compute.json log 20e84f68-56dc-46fd-b5f3-c2494e4c5f83
-    ```
+The job store CSV contains:
+- Compute ID (Cloud Compute identifier)
+- Event ID (Cloud Compute identifier)  
+- Job ID (Cloud Compute identifier)
+- ComputeProviderJob (Provider-specific job ID)
+- Payload GUID (Storage location for job data)
+- Event Identifier (String identifier for the event)
 
+#### `register`
 
+Register plugin(s) with the compute provider. By default, registers all plugins referenced in the compute file.
+
+```bash
+cccli -c compute.json -e .env register [plugin-manifest-file]
+```
+
+**Examples:**
+
+```bash
+# Register all plugins from compute file
+cccli -c data/hello-world/compute.json -e .env register
+
+# Register a single plugin manifest
+cccli -e .env register path/to/plugin-manifest.json
+```
+
+#### `terminate`
+
+Terminate running jobs at different levels (compute, event, or individual job).
+
+```bash
+cccli -c compute.json -e .env terminate <level> <id> <message>
+```
+
+**Arguments:**
+- `level` - Termination scope: `COMPUTE`, `EVENT`, or `JOB`
+- `id` - GUID of the compute/event/job to terminate
+- `message` - Reason for termination (recorded by provider)
+
+**Example:**
+
+```bash
+cccli -c compute.json -e .env terminate COMPUTE 068ff6fe-d8d9-48af-b897-b937a7e14dae "Cancelling test run"
+```
+
+#### `log`
+
+Retrieve logs from a completed or running job.
+
+```bash
+cccli -c compute.json -e .env log <job-id>
+```
+
+**Arguments:**
+- `job-id` - Provider-specific job identifier
+
+**Example:**
+
+```bash
+cccli -c compute.json -e .env log 20e84f68-56dc-46fd-b5f3-c2494e4c5f83
+```
+
+#### `status`
+
+Query job status summaries at different levels.
+
+```bash
+cccli -c compute.json -e .env status <level> <id>
+```
+
+**Arguments:**
+- `level` - Query level: `COMPUTE`, `EVENT`, or `JOB`
+- `id` - Identifier to query
+
+**Example:**
+
+```bash
+cccli -c compute.json -e .env status COMPUTE 068ff6fe-d8d9-48af-b897-b937a7e14dae
+```
+
+Output format: `JobId, StartedAt, StoppedAt, Status, StatusDetail`
+
+#### `schema`
+
+Export JSON schemas for validation and documentation.
+
+```bash
+cccli schema <schema-type>
+```
+
+**Arguments:**
+- `schema-type` - Type of schema: `compute`, `plugin`, or path to compute manifest file
+
+**Examples:**
+
+```bash
+# Export compute manifest schema
+cccli schema compute
+
+# Export plugin manifest schema
+cccli schema plugin
+
+# Generate schema from existing compute file
+cccli schema data/hello-world/compute.json
+```
+
+#### `version`
+
+Display version information.
+
+```bash
+cccli version
+```
+
+## Event Generators
+
+Event generators create multiple job executions from a single compute configuration. Configure generators in the compute file.
+
+### Array Generator
+
+Generate events based on a numeric range:
+
+```json
+{
+    "generator": {
+        "type": "array",
+        "start": 1,
+        "end": 2,
+        "perEventLoop": [
+            {"ENV1": "value1", "ENV2": "value2"},
+            {"ENV1": "value3", "ENV2": "value4"}
+        ]
+    }
+}
+```
+
+This configuration will generate 4 jobs total (2 events × 2 perEventLoop objects). Each job will have `CC_EVENT_NUMBER` set to "1" or "2", plus the environment variables from its perEventLoop object.
+
+### Array Generator 2
+
+Enhanced array generator with additional environment variables:
+
+```json
+{
+    "generator": {
+        "type": "array2",
+        "start": 1,
+        "end": 100,
+        "addEnv": {
+            "CUSTOM_VAR": "custom_value"
+        },
+        "perEventLoop": [
+            {"ENV1": "value1", "ENV2": "value2"}
+        ]
+    }
+}
+```
+
+### Stream Generator
+
+Generate events from CSV or delimited file data:
+
+```json
+{
+    "generator": {
+        "type": "stream",
+        "file": "data/events.csv",
+        "delimiter": ",",
+        "perEventLoop": [
+            {"ENV1": "value1", "ENV2": "value2"}
+        ]
+    }
+}
+```
+
+Each row in the CSV file becomes an event. 
+
+### Realization-Block Generator
+
+Generate events for combinations of realizations and blocks:
+
+```json
+{
+    "generator": {
+        "type": "realzblock",
+        "startRealz": 1,
+        "endRealz": 100,
+        "startBlock": 1,
+        "endBlock": 50
+    }
+}
+```
+
+The `addEnv` field adds static environment variables to all jobs, while `perEventLoop` creates job variations.
+
+### Per-Event Loop
+
+The `perEventLoop` parameter is an array of objects that multiplies the number of jobs submitted for each event. For each event generated, cccli will:
+
+1. Enumerate through each object in the `perEventLoop` array
+2. Add that object's key-value pairs to the job's environment variables
+3. Submit a separate job with those environment variables
+
+**Example:** An array event generator with `start: 1`, `end: 2`, and a `perEventLoop` array with 2 objects will submit **4 total jobs**:
+- Event 1 with perEventLoop object 1
+- Event 1 with perEventLoop object 2
+- Event 2 with perEventLoop object 1
+- Event 2 with perEventLoop object 2
+
+This is useful for running parameter sweeps, multiple configurations, or parallel processing variations of the same computational task.
+
+## Quick Start Example
+
+This example uses Docker and MinIO (local S3-compatible storage) to run a simple "Hello World" computation.
+
+### 1. Start MinIO
+
+```bash
+docker compose up
+```
+
+### 2. Configure MinIO
+
+1. Open `http://localhost:9001` in your browser
+2. Login with credentials from `docker-compose.yml`
+3. Create a bucket named `compute-store`
+4. Create access keys under **User > Access Keys**
+5. Create a path `cc_store` in the bucket under **Object Browser**
+
+### 3. Create Environment File
+
+Create `.env` with your MinIO credentials:
+
+```bash
+CC_AWS_ACCESS_KEY_ID=your_minio_access_key
+CC_AWS_SECRET_ACCESS_KEY=your_minio_secret_key
+CC_AWS_DEFAULT_REGION=us-east-1
+CC_AWS_S3_BUCKET=compute-store
+CC_AWS_ENDPOINT=http://localhost:9000
+```
+
+### 4. Run the Example
+
+```bash
+cccli -c data/hello-world/compute.json -e .env run
+```
+
+The Docker provider automatically registers plugins before execution and waits for all jobs to complete.
+
+## Building from Source
+
+### Prerequisites
+
+- Go 1.25.0 or later
+- Git
+
+### Build Commands
+
+```bash
+cd src
+
+# Basic build
+go build -o cccli ./cmd
+
+# Build with version information
+go build -ldflags "-X main.version=v1.0.0 -X main.commit=$(git describe --tags --always --long) -X main.date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" -o cccli ./cmd
+```
+
+The compiled binary will be created as `cccli` in the src directory.
 
 ## Notes
-When running with the Docker provider, the tool will automatically register the plugin before running.
-The `compute.WaitForJobs()` function is called only when using the Docker provider to ensure that all jobs complete before exiting.
 
-For any issues or further questions, please refer to the GitHub repository or contact the support team.
+- Docker provider automatically registers plugins before running jobs
+- Docker provider waits for all jobs to complete before exiting
+- Job manifests can specify dependencies using the `depends-on` field
+- Multiple compute providers can be configured for different environments
+- Event post-processors (JavaScript) allow custom modification of event data
 
-#### building:
-```bash
->> cd src
->> go build -o manifestor ./cmd
->> go build -ldflags="-X 'main.version=v1.0.0'" -o manifestor ./cmd
->> go build -ldflags "-X main.version=v0.9.0 -X main.commit=$(git describe --tags --always --long) -X main.date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" -o manifestor ./cmd
->> go build -ldflags "-X main.version=v0.9.0 -X main.commit=$(git describe --tags --always --long) -X main.date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" -o manifestor ./cmd
-```
-TODO
- - return new registered name from provider
- - add unregister
- - add switch to run that registers and unregisters
- - logsearch
- - 
+## License
+
+MIT License - Copyright (c) 2025 USACE
+
+See [LICENSE](LICENSE) file for details.
 

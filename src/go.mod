@@ -2,6 +2,12 @@ module github.com/usace-cloud-compute/cloudcompute-cli
 
 go 1.25.0
 
+replace github.com/usace-cloud-compute/cloudcompute => /Users/rdcrlrsg/Projects/programming/hec/cloudcompute
+
+replace github.com/usace-cloud-compute/cloudcompute/providers/k8sargo => /Users/rdcrlrsg/Projects/programming/hec/cloudcompute/providers/k8sargo
+
+replace github.com/usace-cloud-compute/cc-go-sdk => /Users/rdcrlrsg/Projects/programming/hec/cc-go-sdk
+
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/dop251/goja v0.0.0-20250630131328-58d95d85e994

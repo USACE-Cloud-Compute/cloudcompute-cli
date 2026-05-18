@@ -225,7 +225,8 @@ func buildEventGenerator(computeManifests []ComputeManifest, config *CmdComputeC
 					if delimiter, ok := config.Generator["delimiter"]; ok {
 						file, err := os.Open(filepath.(string))
 						if err == nil {
-							return NewStreamingEventGeneratorForReader(event, pelmap, file, delimiter.(string))
+							//@TODO figure out how to handle the CC store profile "CC" here!
+							return NewStreamingEventGeneratorForReader(event, pelmap, file, delimiter.(string), "CC")
 						} else {
 							wd, _ := os.Getwd()
 							return nil, fmt.Errorf("failed to open stream generator file %s from working directory %s: %s", filepath, wd, err)
@@ -315,11 +316,11 @@ func (c *CmdCompute) WaitForJobs() {
 			JobSummaryFunction: func(summaries []JobSummary) {
 				count := 0
 				for _, summary := range summaries {
-					if summary.Status == "RUNNING" ||
-						summary.Status == "SUBMITTED" ||
-						summary.Status == "PENDING" ||
-						summary.Status == "STARTING" ||
-						summary.Status == "RUNNABLE" {
+					if summary.Status == STATUS_RUNNING ||
+						summary.Status == STATUS_SUBMITTED ||
+						summary.Status == STATUS_PENDING ||
+						summary.Status == STATUS_STARTING ||
+						summary.Status == STATUS_RUNNABLE {
 						count++
 					}
 				}

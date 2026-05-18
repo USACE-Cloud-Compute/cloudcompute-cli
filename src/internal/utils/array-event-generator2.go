@@ -12,6 +12,10 @@ import (
 	. "github.com/usace-cloud-compute/cloudcompute"
 )
 
+const (
+	STORE_PROFILE string = "CC"
+)
+
 type ArrayEventGenerator2 struct {
 	event                  Event
 	end                    int64
@@ -55,7 +59,7 @@ func NewArrayEventGenerator2(input ArrayEventGeneratorInput) (*ArrayEventGenerat
 	}
 
 	for i := 0; i < manifestCount; i++ {
-		err := input.Event.Manifests[i].WritePayload()
+		err := input.Event.Manifests[i].WritePayload(STORE_PROFILE)
 		if err != nil {
 			return nil, fmt.Errorf("failed to write payload for manifest %s: %s", input.Event.Manifests[i].ManifestID, err)
 		}

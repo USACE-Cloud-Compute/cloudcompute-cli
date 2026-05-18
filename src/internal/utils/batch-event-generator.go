@@ -31,7 +31,7 @@ func NewStreamingEventGeneratorForReader2(event Event, perEventLoopData []map[st
 	scanner.Split(splitAt(delimiter))
 	manifestCount := len(event.Manifests)
 	for i := 0; i < manifestCount; i++ {
-		err := event.Manifests[i].WritePayload()
+		err := event.Manifests[i].WritePayload(STORE_PROFILE)
 		if err != nil {
 			return nil, fmt.Errorf("failed to write payload for manifest %s: %s", event.Manifests[i].ManifestID, err)
 		}
@@ -54,7 +54,7 @@ func NewStreamingEventGeneratorForReader2(event Event, perEventLoopData []map[st
 func NewStreamingEventGenerator2(event Event, perEventLoopData []map[string]string, scanner *bufio.Scanner) (*StreamingBatchEventGenerator, error) {
 	manifestCount := len(event.Manifests)
 	for i := 0; i < manifestCount; i++ {
-		err := event.Manifests[i].WritePayload()
+		err := event.Manifests[i].WritePayload(STORE_PROFILE)
 		if err != nil {
 			return nil, fmt.Errorf("failed to write payload for manifest %s: %s", event.Manifests[i].ManifestID, err)
 		}
