@@ -2,11 +2,11 @@ module github.com/usace-cloud-compute/cloudcompute-cli
 
 go 1.25.0
 
-replace github.com/usace-cloud-compute/cloudcompute => /Users/rdcrlrsg/Projects/programming/hec/cloudcompute
+//replace github.com/usace-cloud-compute/cloudcompute => /Users/rdcrlrsg/Projects/programming/hec/cloudcompute
 
-replace github.com/usace-cloud-compute/cloudcompute/providers/k8sargo => /Users/rdcrlrsg/Projects/programming/hec/cloudcompute/providers/k8sargo
+//replace github.com/usace-cloud-compute/cloudcompute/providers/k8sargo => /Users/rdcrlrsg/Projects/programming/hec/cloudcompute/providers/k8sargo
 
-replace github.com/usace-cloud-compute/cc-go-sdk => /Users/rdcrlrsg/Projects/programming/hec/cc-go-sdk
+//replace github.com/usace-cloud-compute/cc-go-sdk => /Users/rdcrlrsg/Projects/programming/hec/cc-go-sdk
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.3
@@ -15,8 +15,8 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/invopop/jsonschema v0.13.0
 	github.com/spf13/cobra v1.9.1
-	github.com/usace-cloud-compute/cc-go-sdk v0.0.0-20251124210849-b455e063a7ea
-	github.com/usace-cloud-compute/cloudcompute v0.0.0-20260304191130-bb46c975bf03
+	github.com/usace-cloud-compute/cc-go-sdk v0.0.0-20260520131922-16e50398a66a
+	github.com/usace-cloud-compute/cloudcompute v0.0.0-20260407192053-381323cebd99
 	github.com/vbauerster/mpb/v8 v8.11.2
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 )
