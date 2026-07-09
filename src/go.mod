@@ -16,7 +16,7 @@ require (
 	github.com/invopop/jsonschema v0.13.0
 	github.com/spf13/cobra v1.9.1
 	github.com/usace-cloud-compute/cc-go-sdk v0.0.0-20260520131922-16e50398a66a
-	github.com/usace-cloud-compute/cloudcompute v0.0.0-20260709194551-1f9e6f59e6f4
+	github.com/usace-cloud-compute/cloudcompute v0.0.0-20260709195749-ec0e8f14c1a5
 	github.com/vbauerster/mpb/v8 v8.11.2
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 )
