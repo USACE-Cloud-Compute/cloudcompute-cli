@@ -472,6 +472,8 @@ github.com/usace-cloud-compute/cloudcompute v0.0.0-20260709194551-1f9e6f59e6f4 h
 github.com/usace-cloud-compute/cloudcompute v0.0.0-20260709194551-1f9e6f59e6f4/go.mod h1:YVsheKqV3nXqsKaf0qfMbnBisUSaX8jphyCmpMsTUPc=
 github.com/usace-cloud-compute/cloudcompute v0.0.0-20260709195749-ec0e8f14c1a5 h1:g05cKaJ2zY5nCaVMgmojRn4g5wD9SdfffCvyfdYVV7w=
 github.com/usace-cloud-compute/cloudcompute v0.0.0-20260709195749-ec0e8f14c1a5/go.mod h1:YVsheKqV3nXqsKaf0qfMbnBisUSaX8jphyCmpMsTUPc=
+github.com/usace-cloud-compute/cloudcompute v0.0.0-20260710171453-523cd82cbe02 h1:IEHKQTE3M3ev2h6U8flgQe19G1Kx+FCU+CsrzzEkcUk=
+github.com/usace-cloud-compute/cloudcompute v0.0.0-20260710171453-523cd82cbe02/go.mod h1:YVsheKqV3nXqsKaf0qfMbnBisUSaX8jphyCmpMsTUPc=
 github.com/usace-cloud-compute/filesapi v0.0.0-20251107191432-8084e0da4b5c h1:1Srw2WpT9tcEIUY853oeojXJjPH8iTYFGLXPaIrUe+I=
 github.com/usace-cloud-compute/filesapi v0.0.0-20251107191432-8084e0da4b5c/go.mod h1:6iMo7JYrqbf0dfSVGqrAJfoVhi2hKJysD5o8mXi0XhI=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
