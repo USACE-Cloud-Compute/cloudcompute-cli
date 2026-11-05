@@ -302,18 +302,25 @@ func buildEventGenerator(computeManifests []ComputeManifest, config *CmdComputeC
 }
 
 // WaitForJobs continuously monitors the status of jobs associated with a compute instance.
-// It periodically checks if any jobs are still running. If no jobs are found in the "RUNNING" state,
-// it sets the `jobsRunning` flag to false and prints "Shutting Down".
-func (c *CmdCompute) WaitForJobs() {
+// It waits for active jobs to terminate and requires every reported job to have
+// succeeded. Status-query failures, missing statuses, and unknown/failed terminal
+// states return an error; this method is used only for the local Docker provider.
+func (c *CmdCompute) WaitForJobs() error {
 	jobsRunning := true
+	var completionErr error
 	for jobsRunning {
 		time.Sleep(1 * time.Second)
-		c.compute.Status(JobsSummaryQuery{
+		observed := false
+		err := c.compute.Status(JobsSummaryQuery{
 			QueryLevel: "COMPUTE",
 			QueryValue: JobNameParts{
 				Compute: c.compute.ID.String(),
 			},
 			JobSummaryFunction: func(summaries []JobSummary) {
+				observed = true
+				if len(summaries) == 0 {
+					completionErr = fmt.Errorf("compute %s returned no job statuses", c.compute.ID)
+				}
 				count := 0
 				for _, summary := range summaries {
 					if summary.Status == STATUS_RUNNING ||
@@ -322,6 +329,8 @@ func (c *CmdCompute) WaitForJobs() {
 						summary.Status == STATUS_STARTING ||
 						summary.Status == STATUS_RUNNABLE {
 						count++
+					} else if summary.Status != "SUCCEEDED" {
+						completionErr = fmt.Errorf("job %s ended with status %q", summary.JobId, summary.Status)
 					}
 				}
 				if count == 0 {
@@ -330,7 +339,14 @@ func (c *CmdCompute) WaitForJobs() {
 				}
 			},
 		})
+		if err != nil {
+			return fmt.Errorf("query compute status: %w", err)
+		}
+		if !observed {
+			return fmt.Errorf("compute status query returned no response")
+		}
 	}
+	return completionErr
 }
 
 func awsCompute(compute *CmdComputeConfig) (ComputeProvider, error) {

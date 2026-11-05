@@ -56,6 +56,7 @@ var (
 				jobStoreWriter, err := utils.NewCsvJobStore(jobStore)
 				if err != nil {
 					fmt.Fprintln(os.Stderr, "Error creating Job Store file:", err)
+					return err
 				}
 				compute.jobStore = jobStoreWriter
 			}
@@ -76,7 +77,7 @@ var (
 			compute.Run()
 
 			if compute.providerType == DOCKER_PROVIDER {
-				compute.WaitForJobs()
+				return compute.WaitForJobs()
 			}
 			return nil
 		},
