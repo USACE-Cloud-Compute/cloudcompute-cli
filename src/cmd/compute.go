@@ -14,7 +14,6 @@ import (
 	. "github.com/usace-cloud-compute/cloudcompute/providers/awsbatch"
 	. "github.com/usace-cloud-compute/cloudcompute/providers/docker"
 	. "github.com/usace-cloud-compute/cloudcompute/providers/k8sargo"
-	. "github.com/usace-cloud-compute/cloudcompute/providers/k8ssimple"
 )
 
 type TerminationLevel string
@@ -361,15 +360,15 @@ func awsCompute(compute *CmdComputeConfig) (ComputeProvider, error) {
 	return NewAwsBatchProvider(cpi)
 }
 
-func k8sCompute(compute *CmdComputeConfig) (ComputeProvider, error) {
-	ns := compute.Provider["namespace"].(string)
-	k8sconfig := compute.Provider["kubeconfig"].(string)
-	config := KubernetesComputeProviderConfig{
-		Namespace:  ns,
-		Kubeconfig: k8sconfig,
-	}
-	return NewKubernetesComputeProvider(config)
-}
+// func k8sCompute(compute *CmdComputeConfig) (ComputeProvider, error) {
+// 	ns := compute.Provider["namespace"].(string)
+// 	k8sconfig := compute.Provider["kubeconfig"].(string)
+// 	config := KubernetesComputeProviderConfig{
+// 		Namespace:  ns,
+// 		Kubeconfig: k8sconfig,
+// 	}
+// 	return NewKubernetesComputeProvider(config)
+// }
 
 func k8sArgoCompute(compute *CmdComputeConfig) (ComputeProvider, error) {
 	ns := compute.Provider["namespace"].(string)
