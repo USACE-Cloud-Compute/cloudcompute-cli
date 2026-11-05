@@ -2,12 +2,6 @@ module github.com/usace-cloud-compute/cloudcompute-cli
 
 go 1.25.0
 
-//replace github.com/usace-cloud-compute/cloudcompute => /Users/rdcrlrsg/Projects/programming/hec/cloudcompute
-
-//replace github.com/usace-cloud-compute/cloudcompute/providers/k8sargo => /Users/rdcrlrsg/Projects/programming/hec/cloudcompute/providers/k8sargo
-
-//replace github.com/usace-cloud-compute/cc-go-sdk => /Users/rdcrlrsg/Projects/programming/hec/cc-go-sdk
-
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/dop251/goja v0.0.0-20250630131328-58d95d85e994
@@ -15,8 +9,8 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/invopop/jsonschema v0.13.0
 	github.com/spf13/cobra v1.9.1
-	github.com/usace-cloud-compute/cc-go-sdk v0.0.0-20260520131922-16e50398a66a
-	github.com/usace-cloud-compute/cloudcompute v0.0.0-20260710171453-523cd82cbe02
+	github.com/usace-cloud-compute/cc-go-sdk v0.0.0-20261030130035-a64f36e73f76
+	github.com/usace-cloud-compute/cloudcompute v0.0.0-20261021151509-71d2ea409369
 	github.com/vbauerster/mpb/v8 v8.11.2
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 )
@@ -145,7 +139,7 @@ require (
 	github.com/spf13/cast v1.9.2 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/upper/db/v4 v4.10.0 // indirect
-	github.com/usace-cloud-compute/filesapi v0.0.0-20251107191432-8084e0da4b5c // indirect
+	github.com/usace-cloud-compute/filesapi v0.0.0-20261029184516-67fc7e91b0bd // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/x448/float16 v0.8.4 // indirect

@@ -23,7 +23,7 @@ func NewCsvJobStore(filepath string) (*CsvJobStore, error) {
 	return &CsvJobStore{f, &sync.Mutex{}}, nil
 }
 
-func (cjs *CsvJobStore) SaveJob(computeId uuid.UUID, payloadId uuid.UUID, event string, job *Job) error {
+func (cjs *CsvJobStore) SaveJob(computeId uuid.UUID, payloadId uuid.UUID, event string, computeEventName string, job *Job) error {
 	cjs.m.Lock()
 	defer cjs.m.Unlock()
 	line := fmt.Sprintf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n", computeId.String(), job.EventID.String(), job.ID, *job.SubmittedJob.JobId, payloadId.String(), event)
