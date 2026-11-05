@@ -327,9 +327,9 @@ func initCompute() (*CmdCompute, error) {
 	case AWSBATCH_PROVIDER:
 		log.Println("Using the AWS Batch compute provider")
 		computeProvider, err = awsCompute(computeConfig)
-	case K8S_PROVIDER:
-		log.Println("Using the K8S compute provider")
-		computeProvider, err = k8sCompute(computeConfig)
+	// case K8S_PROVIDER:
+	// 	log.Println("Using the K8S compute provider")
+	// 	computeProvider, err = k8sCompute(computeConfig)
 	case K8SARGO_PROVIDER:
 		log.Println("Using the K8S Argo compute provider")
 		computeProvider, err = k8sArgoCompute(computeConfig)
