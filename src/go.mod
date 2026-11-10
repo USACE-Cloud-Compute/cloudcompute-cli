@@ -2,6 +2,8 @@ module github.com/usace-cloud-compute/cloudcompute-cli
 
 go 1.25.0
 
+replace github.com/usace-cloud-compute/cloudcompute => /workspaces/cloudcompute
+
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/dop251/goja v0.0.0-20250630131328-58d95d85e994
@@ -9,8 +11,8 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/invopop/jsonschema v0.13.0
 	github.com/spf13/cobra v1.9.1
-	github.com/usace-cloud-compute/cc-go-sdk v0.0.0-20261030130035-a64f36e73f76
-	github.com/usace-cloud-compute/cloudcompute v0.0.0-20261021151509-71d2ea409369
+	github.com/usace-cloud-compute/cc-go-sdk v0.0.0-20261030200125-f30fddcf3628
+	github.com/usace-cloud-compute/cloudcompute v0.0.0-20261105181749-c78e2517d423
 	github.com/vbauerster/mpb/v8 v8.11.2
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 )
